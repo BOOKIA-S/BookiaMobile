@@ -75,14 +75,31 @@ flutter doctor     # revisa que Android Studio y el emulador estén detectados
 cp .env.example .env          # en PowerShell: copy .env.example .env
 ```
 
-Abre `.env` y escribe un `JWT_SECRET` largo y un `ADMIN_PASSWORD`. **Nunca subas `.env` al repositorio.**
+Abre `.env` y llena las variables obligatorias. **Nunca subas `.env` al repositorio.**
+
+| Variable | ¿Obligatoria? | Qué poner |
+| --- | --- | --- |
+| `JWT_SECRET` | Sí | Cadena larga y aleatoria. En Git Bash: `openssl rand -hex 48` |
+| `ADMIN_PASSWORD` | Sí | Contraseña del admin, mínimo 8 caracteres |
+| `ADMIN_EMAIL` | Sí (ya viene llena) | Correo del admin; por defecto `admin@bookia.local` |
+| `JWT_EXPIRES_IN_SECONDS`, `BCRYPT_SALT_ROUNDS`, `CLIENT_URL` | No | Déjalas como vienen |
+| `BOOKIA_API_PATH` | No | Solo si el build no encuentra la carpeta `api/` de `bookia` |
 
 ```bash
 docker compose up -d          # levanta MongoDB + API
-docker compose --profile tools run --rm seed   # datos de prueba (solo la primera vez)
 ```
 
 Comprueba que funciona abriendo `http://localhost:4000/api/health`; debe responder `{"status":"ok"}`.
+
+#### Datos de prueba (seed)
+
+Con la API arriba, carga el catálogo de prueba:
+
+```bash
+docker compose --profile tools run --rm seed
+```
+
+El seed crea la cuenta **admin** (`ADMIN_EMAIL` / `ADMIN_PASSWORD`) y deja libros, librerías y ofertas de ejemplo. Se corre **solo la primera vez**: si lo repites, reemplaza el catálogo completo y borra las cuentas de encargado de tienda. Si falla con `Missing required environment variables`, revisa que `.env` tenga `ADMIN_PASSWORD` llena.
 
 Para traer cambios nuevos de la API:
 
