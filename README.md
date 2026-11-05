@@ -8,7 +8,7 @@ Proyecto de equipo de la materia **Desarrollo de Aplicaciones Móviles 2**. Entr
 | --- | --- |
 | Jaime de Jesús Fuentes Cruz | Administrador de GitHub, Docker, CI/CD y API |
 | Elizabeth de la Cruz Ramírez | Core de la app y búsqueda |
-| Ángel de Jesús López Temporal | Libros, escáner y documentación técnica |
+| Ángel de Jesús Torres Temporal | Libros, escáner y documentación técnica |
 | Karol Hernán López Ortega | Librerías, mapa y panel de tienda |
 | Andrés Alvarado Lazcano | Cuentas, reservas y calidad |
 
