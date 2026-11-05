@@ -1,0 +1,51 @@
+# BOOKIA Móvil: MongoDB + BOOKIA API as an independent service (DOC-01).
+# The API code is NOT in this repo: it is read from ../bookia/api
+# (clone of https://github.com/imdestro1/bookia next to this folder).
+#
+#   docker compose up -d                            # mongo + api on :4000
+#   docker compose --profile tools run --rm seed    # load test data (first time)
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./docker/api
+      additional_contexts:
+        api_src: ${BOOKIA_API_PATH:-../BookiaAPI}
+    image: bookiamobile-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      MONGODB_URI: mongodb://mongo:27017/bookia
+    ports:
+      - "4000:4000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  seed:
+    image: bookiamobile-api
+    command: ["npm", "run", "seed"]
+    env_file: .env
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/bookia
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@bookia.local}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    profiles: [tools]
+
+volumes:
+  mongo_data:
