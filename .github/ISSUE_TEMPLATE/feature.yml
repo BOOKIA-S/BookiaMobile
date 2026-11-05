@@ -1,0 +1,38 @@
+name: Tarea / funcionalidad
+description: Un commit o grupo de commits del Plan (docs/PLAN.md, tabla 4)
+title: "[Sxx] "
+labels: ["type:feature"]
+body:
+  - type: input
+    id: plan-id
+    attributes:
+      label: ID del Plan
+      placeholder: "I3-05"
+    validations:
+      required: true
+  - type: input
+    id: screen
+    attributes:
+      label: Pantalla(s)
+      placeholder: "07 Ficha de libro, o no aplica"
+  - type: input
+    id: commit
+    attributes:
+      label: Mensaje de commit del Plan
+      placeholder: "feat(books): add book detail screen with store comparison"
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Criterios de aceptación
+      description: Qué debe cumplirse para cerrar el issue (DoD, docs/CONSTITUTION.md sección 11)
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: api
+    attributes:
+      label: Endpoints de la API que usa
+      placeholder: "GET /api/books/:id"

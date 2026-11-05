@@ -1,0 +1,21 @@
+# Reviewers by folder (docs/CONSTITUTION.md 6.6).
+# ASSUMPTION: only @imDestro1 (Jaime) has a known GitHub user so far.
+# When each member sends their username, Jaime replaces the comments below.
+
+*                                   @imDestro1
+
+# Infrastructure: only Jaime
+/.github/                           @imDestro1
+/docker/                            @imDestro1
+/docker-compose.yml                 @imDestro1
+
+# Features (owner in docs/PLAN.md)
+# /app/lib/features/search/         @<elizabeth>
+# /app/lib/features/home/           @<elizabeth>
+# /app/lib/features/books/          @<angel>
+# /app/lib/features/scanner/        @<angel>
+# /app/lib/features/stores/         @<karol>
+# /app/lib/features/staff/          @<karol>
+# /app/lib/features/auth/           @<andres>
+# /app/lib/features/reservations/   @<andres>
+# /app/lib/features/profile/        @<andres>

@@ -1,0 +1,30 @@
+name: Incidente
+description: Falla de un release ya publicado. Cuenta para DORA (MTTR y tasa de fallo)
+labels: ["incident"]
+body:
+  - type: input
+    id: release
+    attributes:
+      label: Release afectado
+      placeholder: "v0.2.0"
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impacto
+      description: Qué deja de funcionar y para quién
+    validations:
+      required: true
+  - type: input
+    id: detected
+    attributes:
+      label: Detectado (fecha y hora)
+      placeholder: "2026-11-14 10:30"
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: Corrección
+      description: Rama hotfix/* o revert que lo resuelve (la llena Jaime)
