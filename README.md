@@ -22,6 +22,110 @@ mis-proyectos/
 └── BookiaMobile/   ← este repo
 ```
 
+## Puesta en marcha
+
+Guía para dejar listo tu equipo, una sola vez. Los comandos se escriben tal cual; en Windows usa **Git Bash** (viene con Git).
+
+### 1. Herramientas necesarias
+
+| Herramienta | Para qué | Dónde obtenerla |
+| --- | --- | --- |
+| Git | Control de versiones | [git-scm.com/downloads](https://git-scm.com/downloads) |
+| Docker Desktop | Levanta MongoDB y la API | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop) |
+| Flutter (versión de `.fvmrc`) | Compilar la app | [docs.flutter.dev/get-started/install](https://docs.flutter.dev/get-started/install) |
+| FVM | Usar la misma versión de Flutter que el equipo | [fvm.app](https://fvm.app) |
+| Android Studio + emulador | Probar la app en Android | [developer.android.com/studio](https://developer.android.com/studio) |
+| VS Code con extensiones Flutter y Dart | Editor | [code.visualstudio.com](https://code.visualstudio.com) |
+
+Docker Desktop debe estar **abierto y en estado Running** antes de usar `docker`.
+
+### 2. Clonar los dos repositorios
+
+Las carpetas `bookia` y `BookiaMobile` deben quedar **una junto a la otra**:
+
+```bash
+mkdir mis-proyectos && cd mis-proyectos
+git clone https://github.com/imdestro1/bookia.git
+git clone https://github.com/BOOKIA-S/BookiaMobile.git
+cd BookiaMobile
+git checkout develop
+```
+
+Antes de tu primer commit, configura tu identidad con el **mismo correo de tu cuenta de GitHub**:
+
+```bash
+git config user.name "Nombre Apellido"
+git config user.email "tu-correo-de-github@ejemplo.com"
+```
+
+### 3. Instalar la versión fijada de Flutter
+
+La versión exacta de Flutter se fija en `.fvmrc` (regla TEC-02). Cuando el archivo exista en `app/`:
+
+```bash
+cd app
+fvm install
+fvm flutter --version
+flutter doctor     # revisa que Android Studio y el emulador estén detectados
+```
+
+### 4. Levantar la API con Docker
+
+```bash
+cp .env.example .env          # en PowerShell: copy .env.example .env
+```
+
+Abre `.env` y escribe un `JWT_SECRET` largo y un `ADMIN_PASSWORD`. **Nunca subas `.env` al repositorio.**
+
+```bash
+docker compose up -d          # levanta MongoDB + API
+docker compose --profile tools run --rm seed   # datos de prueba (solo la primera vez)
+```
+
+Comprueba que funciona abriendo `http://localhost:4000/api/health`; debe responder `{"status":"ok"}`.
+
+Para traer cambios nuevos de la API:
+
+```bash
+cd ../bookia && git pull && cd ../BookiaMobile
+docker compose up -d --build api
+```
+
+No ejecutes `npm install` dentro de `bookia/api`: Docker instala todo.
+
+### 5. Correr la app
+
+La URL de la API se pasa al ejecutar, nunca se escribe en el código:
+
+| Dónde corre la app | `API_BASE_URL` |
+| --- | --- |
+| Emulador de Android | `http://10.0.2.2:4000/api` |
+| Teléfono físico (misma red Wi-Fi) | `http://<IP-de-la-PC>:4000/api` |
+
+```bash
+cd app
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:4000/api
+```
+
+### 6. Antes de cada commit
+
+```bash
+cd app
+flutter analyze        # debe quedar sin avisos
+dart format .
+flutter test
+```
+
+Las reglas de ramas, commits y Pull Requests están en [docs/GUIA_GITHUB.md](docs/GUIA_GITHUB.md).
+
+### Problemas comunes
+
+| Situación | Qué hacer |
+| --- | --- |
+| `docker: command not found` o error de conexión | Abre Docker Desktop y espera a que diga Running |
+| `/api/health` no responde | Revisa con `docker compose ps` que `mongo` y `api` estén `healthy`, y que `bookia` esté junto a `BookiaMobile` |
+| La app no llega a la API en el emulador | Usa `10.0.2.2`, no `localhost` |
+
 ## Documentación
 
 | Documento | Para qué |
@@ -32,8 +136,6 @@ mis-proyectos/
 | [docs/GUIA_GITHUB.md](docs/GUIA_GITHUB.md) | Guía paso a paso de Git y GitHub para el equipo |
 | [docs/bitacoras/](docs/bitacoras/) | Plantilla y bitácoras semanales en Word |
 | [docs/word/](docs/word/) | Copias en Word de la Constitución, el Plan y la Guía (la versión vigente es la `.md`) |
-
-La guía completa de instalación de Flutter y Docker llega con el commit I4-01 del Plan.
 
 ## Licencia
 
