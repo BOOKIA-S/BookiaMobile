@@ -10,7 +10,7 @@ BOOKIA Móvil es una app **Flutter** (Android e iOS) hecha por un equipo de 5 es
 | --- | --- | --- |
 | Jaime de Jesús Fuentes Cruz | **Administrador de GitHub**, Docker, CI/CD y dueño de la API | 01, 02, 13 |
 | Elizabeth de la Cruz Ramírez | Core de la app y búsqueda | 03, 04, 05 |
-| Ángel de Jesús López Temporal | Libros, escáner y documentación técnica | 06, 07, 12 |
+| Ángel de Jesús Torres Temporal | Libros, escáner y documentación técnica | 06, 07, 12 |
 | Karol Hernán López Ortega | Librerías, mapa y panel de tienda | 08, 09, 16, 17 |
 | Andrés Alvarado Lazcano | Cuentas, reservas y calidad | 10, 11, 14, 15 |
 
