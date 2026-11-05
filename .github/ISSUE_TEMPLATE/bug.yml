@@ -1,0 +1,45 @@
+name: Defecto (bug)
+description: Algo no funciona como dice la especificación
+labels: ["type:bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Qué pasa
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducir
+      value: |
+        1.
+        2.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Qué debería pasar
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad
+      options:
+        - "A (bloquea una pantalla o el release)"
+        - "M (funciona, pero mal)"
+        - "B (detalle visual o menor)"
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Dispositivo y versión de la app
+      placeholder: "Emulador Pixel 7 API 34, v0.2.0"
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidencia
+      description: Captura, video o log
