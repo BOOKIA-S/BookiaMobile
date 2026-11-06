@@ -1,0 +1,42 @@
+# Lint rules for BOOKIA Mobile (docs/CONSTITUTION.md COD-01, COD-04, COD-08).
+# CI runs `flutter analyze` and fails on any error or warning.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    avoid_print: error
+    missing_required_param: error
+    missing_return: error
+
+linter:
+  rules:
+    # COD-08: print() is forbidden; use debugPrint or the logger.
+    avoid_print: true
+    # Style and readability.
+    always_declare_return_types: true
+    directives_ordering: true
+    prefer_single_quotes: true
+    require_trailing_commas: true
+    sort_child_properties_last: true
+    # Immutability and performance.
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    # ARQ-04: import other files through the package, never with ../ from lib.
+    always_use_package_imports: true
+    avoid_relative_lib_imports: true
+    # Safer async code.
+    unawaited_futures: true
+    cancel_subscriptions: true
+    close_sinks: true
