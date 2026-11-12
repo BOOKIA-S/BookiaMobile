@@ -1,8 +1,8 @@
 import 'package:bookia_mobile/core/di/providers.dart';
+import 'package:bookia_mobile/core/session/session_providers.dart';
+import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/features/auth/domain/entities/auth_session.dart';
 import 'package:bookia_mobile/features/auth/presentation/providers.dart';
-import 'package:bookia_mobile/features/splash/domain/entities/session_status.dart';
-import 'package:bookia_mobile/features/splash/presentation/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final authControllerProvider =
@@ -45,11 +45,6 @@ class AuthController extends Notifier<AsyncValue<AuthSession?>> {
 
   Future<void> logout() async {
     await ref.read(tokenStorageProvider).clearToken();
-    ref.read(currentSessionProvider.notifier).set(const GuestSession());
-    state = const AsyncData(null);
-  }
-
-  void sessionExpired() {
     ref.read(currentSessionProvider.notifier).set(const GuestSession());
     state = const AsyncData(null);
   }

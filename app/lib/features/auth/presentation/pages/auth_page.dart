@@ -1,8 +1,8 @@
 import 'package:bookia_mobile/app/theme/app_spacing.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
+import 'package:bookia_mobile/core/session/session_providers.dart';
+import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:bookia_mobile/features/splash/domain/entities/session_status.dart';
-import 'package:bookia_mobile/features/splash/presentation/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
