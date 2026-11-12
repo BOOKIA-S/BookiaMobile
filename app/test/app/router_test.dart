@@ -1,12 +1,20 @@
 import 'package:bookia_mobile/app/router.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../helpers/fakes.dart';
 
 void main() {
   Future<void> pumpRouter(WidgetTester tester, {String? at}) async {
     final router = createRouter(initialLocation: at ?? AppRoutes.home);
     addTearDown(router.dispose);
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: offlineOverrides(),
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
     await tester.pumpAndSettle();
   }
 
