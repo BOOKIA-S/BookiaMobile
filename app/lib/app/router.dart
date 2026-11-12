@@ -6,6 +6,7 @@ import 'package:bookia_mobile/features/home/presentation/pages/home_page.dart';
 import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
 import 'package:bookia_mobile/features/splash/presentation/pages/splash_page.dart';
 import 'package:bookia_mobile/features/stores/presentation/pages/store_detail_page.dart';
+import 'package:bookia_mobile/features/stores/presentation/pages/stores_list_page.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,6 +20,7 @@ abstract final class AppRoutes {
   static const reservations = '/reservations';
   static const profile = '/profile';
   static const auth = '/auth';
+  static const stores = '/stores';
   static const storeDetail = '/stores/:id';
 
   /// Screen 07, full screen over the bottom bar.
@@ -59,6 +61,7 @@ GoRouter createRouter({String initialLocation = AppRoutes.home}) => GoRouter(
   routes: [
     GoRoute(path: AppRoutes.splash, builder: (_, _) => const SplashPage()),
     GoRoute(path: AppRoutes.auth, builder: (_, _) => const AuthPage()),
+    GoRoute(path: AppRoutes.stores, builder: (_, _) => const StoresListPage()),
     GoRoute(
       path: AppRoutes.storeDetail,
       builder: (_, state) => StoreDetailPage(

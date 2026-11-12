@@ -9,6 +9,7 @@ class Store {
     this.mapsUrl,
     this.lat,
     this.lng,
+    this.distanceKm,
   });
 
   final String id;
@@ -19,6 +20,9 @@ class Store {
   final String? mapsUrl;
   final double? lat;
   final double? lng;
+
+  /// Straight-line distance from the user, only in `/stores/near` results.
+  final double? distanceKm;
 }
 
 /// One book of the store catalog with its price and copies.
