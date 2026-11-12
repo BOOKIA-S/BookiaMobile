@@ -1,16 +1,23 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:bookia_mobile/app/router.dart';
 import 'package:bookia_mobile/core/di/providers.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
 import 'package:bookia_mobile/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:bookia_mobile/features/splash/domain/entities/session_status.dart';
+import 'package:bookia_mobile/features/splash/presentation/providers.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers/fakes.dart';
+
 class _Adapter implements HttpClientAdapter {
   RequestOptions? last;
+  final requests = <RequestOptions>[];
   int status = 200;
   Object data = {'message': 'fixture'};
 
@@ -21,6 +28,7 @@ class _Adapter implements HttpClientAdapter {
     Future<void>? cancel,
   ) async {
     last = options;
+    requests.add(options);
     return ResponseBody.fromString(
       jsonEncode(data),
       status,
@@ -105,7 +113,10 @@ void main() {
       addTearDown(container.dispose);
       final controller = container.read(authControllerProvider.notifier);
       await controller.login('a@b.mx', 'fixture-password');
-      expect(controller.currentSession?.user.id, 'u1');
+      expect(
+        (container.read(currentSessionProvider) as SignedInSession).name,
+        'Ana',
+      );
       expect(
         await container.read(tokenStorageProvider).readToken(),
         'fixture-token',
@@ -116,8 +127,54 @@ void main() {
         throwsA(isA<UnauthorizedFailure>()),
       );
       expect(adapter.last!.headers['Authorization'], 'Bearer fixture-token');
-      expect(controller.currentSession, isNull);
+      expect(container.read(currentSessionProvider), isA<GuestSession>());
       expect(await container.read(tokenStorageProvider).readToken(), isNull);
     },
   );
+
+  testWidgets('splash restores the stored session and profile signs out', (
+    tester,
+  ) async {
+    FlutterSecureStorage.setMockInitialValues({});
+    final adapter = _Adapter()
+      ..data = {
+        'user': {'_id': 'u1', 'name': 'Ana', 'role': 'reader'},
+      };
+    final container = ProviderContainer(
+      overrides: [
+        ...offlineOverrides(),
+        apiBaseUrlProvider.overrideWithValue('https://bookia.test/api'),
+        dioProvider.overrideWithValue(Dio()..httpClientAdapter = adapter),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container.read(tokenStorageProvider).saveToken('fixture-token');
+    final router = createRouter(initialLocation: AppRoutes.splash);
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, AppRoutes.home);
+    expect(
+      adapter.requests.any(
+        (request) =>
+            request.uri.path == '/api/auth/me' &&
+            request.headers['Authorization'] == 'Bearer fixture-token',
+      ),
+      isTrue,
+    );
+    await tester.tap(find.text('Perfil'));
+    await tester.pumpAndSettle();
+    expect(find.text('Sesión iniciada: Ana'), findsOneWidget);
+
+    await tester.tap(find.text('Cerrar sesión'));
+    await tester.pumpAndSettle();
+    expect(container.read(currentSessionProvider), isA<GuestSession>());
+    expect(await container.read(tokenStorageProvider).readToken(), isNull);
+  });
 }

@@ -1,6 +1,8 @@
 import 'package:bookia_mobile/app/theme/app_spacing.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
 import 'package:bookia_mobile/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:bookia_mobile/features/splash/domain/entities/session_status.dart';
+import 'package:bookia_mobile/features/splash/presentation/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,16 +20,15 @@ class AuthEntryPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(authControllerProvider);
-    final session = ref.read(authControllerProvider.notifier).currentSession;
-    if (session == null) return const AuthPage();
+    final session = ref.watch(currentSessionProvider);
+    if (session is! SignedInSession) return const AuthPage();
     return Scaffold(
       appBar: AppBar(title: const Text('Cuenta')),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Sesión iniciada: ${session.user.name}'),
+            Text('Sesión iniciada: ${session.name}'),
             TextButton(
               onPressed: () =>
                   ref.read(authControllerProvider.notifier).logout(),

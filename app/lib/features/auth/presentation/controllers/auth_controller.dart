@@ -1,6 +1,8 @@
 import 'package:bookia_mobile/core/di/providers.dart';
 import 'package:bookia_mobile/features/auth/domain/entities/auth_session.dart';
 import 'package:bookia_mobile/features/auth/presentation/providers.dart';
+import 'package:bookia_mobile/features/splash/domain/entities/session_status.dart';
+import 'package:bookia_mobile/features/splash/presentation/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final authControllerProvider =
@@ -9,9 +11,6 @@ final authControllerProvider =
     );
 
 class AuthController extends Notifier<AsyncValue<AuthSession?>> {
-  AuthSession? _currentSession;
-  AuthSession? get currentSession => _currentSession;
-
   @override
   AsyncValue<AuthSession?> build() => const AsyncData(null);
 
@@ -33,7 +32,11 @@ class AuthController extends Notifier<AsyncValue<AuthSession?>> {
     try {
       final session = await request();
       await ref.read(tokenStorageProvider).saveToken(session.token);
-      _currentSession = session;
+      ref
+          .read(currentSessionProvider.notifier)
+          .set(
+            SignedInSession(name: session.user.name, role: session.user.role),
+          );
       state = AsyncData(session);
     } catch (error, stack) {
       state = AsyncError(error, stack);
@@ -42,12 +45,12 @@ class AuthController extends Notifier<AsyncValue<AuthSession?>> {
 
   Future<void> logout() async {
     await ref.read(tokenStorageProvider).clearToken();
-    _currentSession = null;
+    ref.read(currentSessionProvider.notifier).set(const GuestSession());
     state = const AsyncData(null);
   }
 
   void sessionExpired() {
-    _currentSession = null;
+    ref.read(currentSessionProvider.notifier).set(const GuestSession());
     state = const AsyncData(null);
   }
 }
