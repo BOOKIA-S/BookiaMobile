@@ -34,6 +34,13 @@ void main() {
     expect(_map(500), isA<ServerFailure>());
   });
 
+  test('malformed API error fields use safe Failure defaults', () {
+    final invalid = <String, Object?>{'message': 123, 'code': 456};
+    expect(_map(400, invalid).message, 'Revisa los datos enviados.');
+    expect(_map(403, invalid), isA<ForbiddenFailure>());
+    expect(_map(409, invalid).message, 'La operación no está permitida.');
+  });
+
   test('timeouts become NetworkFailure', () {
     final e = DioException.connectionTimeout(
       timeout: const Duration(seconds: 1),

@@ -18,8 +18,12 @@ abstract final class FailureFactory {
   /// Maps the API error body `{ message, code? }` (API_USAGE §6).
   static Failure fromResponse(Response<Object?>? response) {
     final body = response?.data;
-    final message = body is Map ? body['message'] as String? : null;
-    final code = body is Map ? body['code'] as String? : null;
+    final message = body is Map && body['message'] is String
+        ? body['message'] as String
+        : null;
+    final code = body is Map && body['code'] is String
+        ? body['code'] as String
+        : null;
     return switch (response?.statusCode) {
       400 => ValidationFailure(message ?? 'Revisa los datos enviados.'),
       401 => const UnauthorizedFailure(),

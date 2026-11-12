@@ -6,8 +6,9 @@ import 'package:bookia_mobile/features/splash/domain/repositories/session_reposi
 import 'package:bookia_mobile/features/splash/domain/usecases/check_stored_session.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Overridden by the secure TokenStorage when I5-05 lands (SEG-01).
-final tokenStoreProvider = Provider<TokenStore>((_) => MemoryTokenStore());
+final tokenStoreProvider = Provider<TokenStore>(
+  (ref) => ref.watch(tokenStorageProvider),
+);
 
 final sessionRepositoryProvider = Provider<SessionRepository>(
   (ref) => SessionRepositoryImpl(
