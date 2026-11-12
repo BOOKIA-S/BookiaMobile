@@ -1,5 +1,6 @@
 import 'package:bookia_mobile/app/app_shell.dart';
 import 'package:bookia_mobile/core/widgets/placeholder_page.dart';
+import 'package:bookia_mobile/features/books/presentation/pages/book_detail_page.dart';
 import 'package:bookia_mobile/features/home/presentation/pages/home_page.dart';
 import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
 import 'package:bookia_mobile/features/splash/presentation/pages/splash_page.dart';
@@ -15,6 +16,9 @@ abstract final class AppRoutes {
   static const map = '/map';
   static const reservations = '/reservations';
   static const profile = '/profile';
+
+  /// Screen 07, full screen over the bottom bar.
+  static String book(String id) => '/books/$id';
 }
 
 StatefulShellBranch _tab(
@@ -52,6 +56,11 @@ GoRouter createRouter({String initialLocation = AppRoutes.home}) => GoRouter(
         _tab(AppRoutes.reservations, 'Mis reservas'),
         _tab(AppRoutes.profile, 'Perfil'),
       ],
+    ),
+    GoRoute(
+      path: '/books/:id',
+      builder: (_, state) =>
+          BookDetailPage(bookId: state.pathParameters['id']!),
     ),
   ],
 );
