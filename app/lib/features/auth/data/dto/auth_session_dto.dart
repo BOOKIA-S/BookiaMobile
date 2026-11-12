@@ -10,11 +10,12 @@ class AuthSessionDto {
     if (user is! Map<String, dynamic>) {
       throw const FormatException('Invalid session response');
     }
-    return AuthSessionDto(
-      user: user,
-      token: json['token'] as String,
-      expiresIn: json['expires_in'] as int,
-    );
+    final token = json['token'] as String;
+    final expiresIn = json['expires_in'] as int;
+    if (token.trim().isEmpty || expiresIn <= 0) {
+      throw const FormatException('Invalid session response');
+    }
+    return AuthSessionDto(user: user, token: token, expiresIn: expiresIn);
   }
 
   final Map<String, dynamic> user;

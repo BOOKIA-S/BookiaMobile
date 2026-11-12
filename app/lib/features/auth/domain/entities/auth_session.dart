@@ -1,4 +1,4 @@
-import 'auth_user.dart';
+import 'package:bookia_mobile/features/auth/domain/entities/auth_user.dart';
 
 class AuthSession {
   const AuthSession({

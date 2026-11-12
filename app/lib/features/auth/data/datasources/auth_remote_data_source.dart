@@ -3,7 +3,7 @@ typedef AuthPost = Future<Map<String, dynamic>> Function(
   Object? body,
 });
 
-/// Accepts ApiClient.post after the shared network branch is integrated.
+/// Receives ApiClient.post from the feature provider.
 class AuthRemoteDataSource {
   const AuthRemoteDataSource(this.post);
 

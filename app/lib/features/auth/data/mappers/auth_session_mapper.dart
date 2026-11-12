@@ -1,6 +1,6 @@
-import '../../domain/entities/auth_session.dart';
-import '../../domain/entities/auth_user.dart';
-import '../dto/auth_session_dto.dart';
+import 'package:bookia_mobile/features/auth/data/dto/auth_session_dto.dart';
+import 'package:bookia_mobile/features/auth/domain/entities/auth_session.dart';
+import 'package:bookia_mobile/features/auth/domain/entities/auth_user.dart';
 
 extension AuthSessionMapper on AuthSessionDto {
   AuthSession toDomain() => AuthSession(

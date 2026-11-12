@@ -1,3 +1,4 @@
+import 'package:bookia_mobile/core/error/failure.dart';
 import 'package:bookia_mobile/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:bookia_mobile/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -74,5 +75,29 @@ void main() {
     });
     expect(session.user.role, 'reader');
     expect(session.user.storeId, isNull);
+  });
+
+  test('malformed sessions fail without exposing the response', () async {
+    for (final response in <Map<String, dynamic>>[
+      {},
+      {'user': <String, dynamic>{}, 'expires_in': 60},
+      {'user': <String, dynamic>{}, 'token': 'fixture', 'expires_in': '60'},
+      {'user': <String, dynamic>{}, 'token': '', 'expires_in': 60},
+      {'user': <String, dynamic>{}, 'token': 'fixture', 'expires_in': -1},
+    ]) {
+      final repository = AuthRepositoryImpl(
+        AuthRemoteDataSource((_, {body}) async => response),
+      );
+      await expectLater(
+        repository.login('a@b.mx', 'fixture-password'),
+        throwsA(
+          isA<ServerFailure>().having(
+            (failure) => failure.message,
+            'safe message',
+            isNot(contains('fixture')),
+          ),
+        ),
+      );
+    }
   });
 }
