@@ -5,6 +5,7 @@ import 'package:bookia_mobile/features/books/presentation/pages/book_detail_page
 import 'package:bookia_mobile/features/home/presentation/pages/home_page.dart';
 import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
 import 'package:bookia_mobile/features/splash/presentation/pages/splash_page.dart';
+import 'package:bookia_mobile/features/stores/presentation/pages/store_detail_page.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -18,9 +19,13 @@ abstract final class AppRoutes {
   static const reservations = '/reservations';
   static const profile = '/profile';
   static const auth = '/auth';
+  static const storeDetail = '/stores/:id';
 
   /// Screen 07, full screen over the bottom bar.
   static String book(String id) => '/books/$id';
+
+  /// Location of screen 09 for [id].
+  static String store(String id) => '/stores/$id';
 }
 
 StatefulShellBranch _tab(
@@ -54,6 +59,13 @@ GoRouter createRouter({String initialLocation = AppRoutes.home}) => GoRouter(
   routes: [
     GoRoute(path: AppRoutes.splash, builder: (_, _) => const SplashPage()),
     GoRoute(path: AppRoutes.auth, builder: (_, _) => const AuthPage()),
+    GoRoute(
+      path: AppRoutes.storeDetail,
+      builder: (_, state) => StoreDetailPage(
+        key: ValueKey(state.pathParameters['id']),
+        storeId: state.pathParameters['id']!,
+      ),
+    ),
     StatefulShellRoute.indexedStack(
       builder: (_, _, shell) => AppShell(navigationShell: shell),
       branches: [
