@@ -11,8 +11,10 @@ environment:
 
 # Only packages approved in docs/CONSTITUTION.md 2.2. Anything else needs an ADR.
 dependencies:
+  dio: ^5.11.1
   flutter:
     sdk: flutter
+  flutter_riverpod: ^3.5.0
   go_router: ^18.1.3
 
 dev_dependencies:
