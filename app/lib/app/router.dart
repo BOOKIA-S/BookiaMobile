@@ -1,6 +1,7 @@
 import 'package:bookia_mobile/app/app_shell.dart';
 import 'package:bookia_mobile/core/widgets/placeholder_page.dart';
 import 'package:bookia_mobile/features/home/presentation/pages/home_page.dart';
+import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,15 +14,26 @@ abstract final class AppRoutes {
   static const profile = '/profile';
 }
 
-StatefulShellBranch _tab(String path, String title, [Widget? page]) =>
-    StatefulShellBranch(
-      routes: [
-        GoRoute(
-          path: path,
-          builder: (_, _) => page ?? PlaceholderPage(title: title),
-        ),
-      ],
-    );
+StatefulShellBranch _tab(
+  String path,
+  String title, [
+  Widget Function(GoRouterState state)? page,
+]) => StatefulShellBranch(
+  routes: [
+    GoRoute(
+      path: path,
+      builder: (_, state) => page?.call(state) ?? PlaceholderPage(title: title),
+    ),
+  ],
+);
+
+Widget _results(GoRouterState state) {
+  final params = state.uri.queryParameters;
+  return SearchResultsPage(
+    key: ValueKey(state.uri),
+    query: (q: params['q'], genre: params['genre']),
+  );
+}
 
 /// Builds the app router. A new instance per call keeps tests isolated.
 GoRouter createRouter({String initialLocation = AppRoutes.home}) => GoRouter(
@@ -30,8 +42,8 @@ GoRouter createRouter({String initialLocation = AppRoutes.home}) => GoRouter(
     StatefulShellRoute.indexedStack(
       builder: (_, _, shell) => AppShell(navigationShell: shell),
       branches: [
-        _tab(AppRoutes.home, 'Inicio', const HomePage()),
-        _tab(AppRoutes.search, 'Buscar'),
+        _tab(AppRoutes.home, 'Inicio', (_) => const HomePage()),
+        _tab(AppRoutes.search, 'Buscar', _results),
         _tab(AppRoutes.map, 'Mapa'),
         _tab(AppRoutes.reservations, 'Mis reservas'),
         _tab(AppRoutes.profile, 'Perfil'),

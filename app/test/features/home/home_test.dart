@@ -33,7 +33,10 @@ void main() {
     addTearDown(router.dispose);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [homeRepositoryProvider.overrideWithValue(repo)],
+        overrides: [
+          ...offlineOverrides().skip(1),
+          homeRepositoryProvider.overrideWithValue(repo),
+        ],
         child: MaterialApp.router(routerConfig: router),
       ),
     );
