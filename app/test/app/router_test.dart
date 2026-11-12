@@ -1,4 +1,5 @@
 import 'package:bookia_mobile/app/router.dart';
+import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -42,5 +43,12 @@ void main() {
     await pumpRouter(tester, at: AppRoutes.map);
     final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(bar.selectedIndex, 2);
+  });
+
+  testWidgets('search remains available to visitors', (tester) async {
+    await pumpRouter(tester);
+    await tester.tap(find.text('Buscar'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SearchResultsPage), findsOneWidget);
   });
 }

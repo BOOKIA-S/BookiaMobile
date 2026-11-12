@@ -1,5 +1,6 @@
 import 'package:bookia_mobile/app/app_shell.dart';
 import 'package:bookia_mobile/core/widgets/placeholder_page.dart';
+import 'package:bookia_mobile/features/auth/presentation/pages/auth_page.dart';
 import 'package:bookia_mobile/features/home/presentation/pages/home_page.dart';
 import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
 import 'package:bookia_mobile/features/splash/presentation/pages/splash_page.dart';
@@ -15,6 +16,7 @@ abstract final class AppRoutes {
   static const map = '/map';
   static const reservations = '/reservations';
   static const profile = '/profile';
+  static const auth = '/auth';
 }
 
 StatefulShellBranch _tab(
@@ -25,7 +27,11 @@ StatefulShellBranch _tab(
   routes: [
     GoRoute(
       path: path,
-      builder: (_, state) => page?.call(state) ?? PlaceholderPage(title: title),
+      builder: (_, state) =>
+          page?.call(state) ??
+          (path == AppRoutes.profile
+              ? const AuthEntryPage()
+              : PlaceholderPage(title: title)),
     ),
   ],
 );
@@ -43,6 +49,7 @@ GoRouter createRouter({String initialLocation = AppRoutes.home}) => GoRouter(
   initialLocation: initialLocation,
   routes: [
     GoRoute(path: AppRoutes.splash, builder: (_, _) => const SplashPage()),
+    GoRoute(path: AppRoutes.auth, builder: (_, _) => const AuthPage()),
     StatefulShellRoute.indexedStack(
       builder: (_, _, shell) => AppShell(navigationShell: shell),
       branches: [
