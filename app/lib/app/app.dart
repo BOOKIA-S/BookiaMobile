@@ -12,7 +12,7 @@ class BookiaApp extends StatefulWidget {
 }
 
 class _BookiaAppState extends State<BookiaApp> {
-  final GoRouter _router = createRouter();
+  final GoRouter _router = createRouter(initialLocation: AppRoutes.splash);
 
   @override
   void dispose() {
