@@ -9,6 +9,9 @@ final authControllerProvider =
     );
 
 class AuthController extends Notifier<AsyncValue<AuthSession?>> {
+  AuthSession? _currentSession;
+  AuthSession? get currentSession => _currentSession;
+
   @override
   AsyncValue<AuthSession?> build() => const AsyncData(null);
 
@@ -25,10 +28,12 @@ class AuthController extends Notifier<AsyncValue<AuthSession?>> {
       );
 
   Future<void> _authenticate(Future<AuthSession> Function() request) async {
+    if (state.isLoading) return;
     state = const AsyncLoading();
     try {
       final session = await request();
       await ref.read(tokenStorageProvider).saveToken(session.token);
+      _currentSession = session;
       state = AsyncData(session);
     } catch (error, stack) {
       state = AsyncError(error, stack);
@@ -37,8 +42,12 @@ class AuthController extends Notifier<AsyncValue<AuthSession?>> {
 
   Future<void> logout() async {
     await ref.read(tokenStorageProvider).clearToken();
+    _currentSession = null;
     state = const AsyncData(null);
   }
 
-  void sessionExpired() => state = const AsyncData(null);
+  void sessionExpired() {
+    _currentSession = null;
+    state = const AsyncData(null);
+  }
 }

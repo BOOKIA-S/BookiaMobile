@@ -1,6 +1,7 @@
 import 'package:bookia_mobile/core/network/api_client.dart';
 import 'package:bookia_mobile/core/network/interceptors/auth_interceptor.dart';
 import 'package:bookia_mobile/core/storage/token_storage.dart';
+import 'package:bookia_mobile/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,6 +18,8 @@ final authInterceptorProvider = Provider<AuthInterceptor>(
   (ref) => AuthInterceptor(
     baseUrl: ref.watch(apiBaseUrlProvider),
     tokens: ref.watch(tokenStorageProvider),
+    onUnauthorized: () =>
+        ref.read(authControllerProvider.notifier).sessionExpired(),
   ),
 );
 

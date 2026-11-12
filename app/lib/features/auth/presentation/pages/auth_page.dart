@@ -1,4 +1,5 @@
 import 'package:bookia_mobile/app/theme/app_spacing.dart';
+import 'package:bookia_mobile/core/error/failure.dart';
 import 'package:bookia_mobile/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,7 +18,8 @@ class AuthEntryPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final session = ref.watch(authControllerProvider).asData?.value;
+    ref.watch(authControllerProvider);
+    final session = ref.read(authControllerProvider.notifier).currentSession;
     if (session == null) return const AuthPage();
     return Scaffold(
       appBar: AppBar(title: const Text('Cuenta')),
@@ -55,7 +57,10 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   }
 
   void _submit() {
-    if (!_form.currentState!.validate()) return;
+    if (ref.read(authControllerProvider).isLoading ||
+        !_form.currentState!.validate()) {
+      return;
+    }
     final controller = ref.read(authControllerProvider.notifier);
     if (_register) {
       controller.register(
@@ -152,11 +157,16 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                     const SizedBox(height: AppSpacing.lg),
                     if (session.isLoading)
                       const Center(child: CircularProgressIndicator()),
-                    if (session.hasError)
-                      Text(
-                        'No pudimos completar el acceso. Intenta de nuevo.',
-                        style: TextStyle(color: theme.colorScheme.error),
-                      ),
+                    if (session.hasError && !session.isLoading)
+                      Text(switch (session.error) {
+                        UnauthorizedFailure() =>
+                          'Correo o contraseña incorrectos.',
+                        ConflictFailure() => 'Este correo ya está registrado.',
+                        RateLimitFailure() =>
+                          'Demasiados intentos. Espera unos minutos.',
+                        _ =>
+                          'No pudimos completar el acceso. Intenta de nuevo.',
+                      }, style: TextStyle(color: theme.colorScheme.error)),
                     const SizedBox(height: AppSpacing.sm),
                     FilledButton(
                       onPressed: session.isLoading ? null : _submit,
