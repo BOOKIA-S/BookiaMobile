@@ -16,4 +16,15 @@ class BookRepositoryImpl implements BookRepository {
     );
     return BookDto.fromJson(json).toEntity();
   }
+
+  @override
+  Future<Book?> findByIsbn(String isbn) async {
+    final json = await _api.get<Map<String, dynamic>>(
+      '/books',
+      query: {'isbn': isbn, 'limit': 1},
+    );
+    final items = (json['items'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>();
+    return items.isEmpty ? null : BookDto.fromJson(items.first).toEntity();
+  }
 }
