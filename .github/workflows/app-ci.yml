@@ -1,0 +1,86 @@
+name: app-ci
+
+# Flutter checks for the app (docs/CONSTITUTION.md §8, CI-01).
+# Mark the "app-ci" check as required on main and develop.
+
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - ".github/workflows/app-ci.yml"
+  push:
+    branches: [develop, main]
+    paths:
+      - "app/**"
+      - ".github/workflows/app-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MIN_COVERAGE: 70
+
+jobs:
+  app-ci:
+    name: app-ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # Same Flutter version as app/pubspec.yaml (environment.flutter).
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: app/pubspec.yaml
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check format (COD-04)
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze (COD-04)
+        run: flutter analyze --fatal-infos --fatal-warnings
+
+      - name: Test with coverage (PRU-01, PRU-02)
+        run: flutter test --coverage
+
+      - name: Check coverage >= ${{ env.MIN_COVERAGE }} %
+        run: |
+          awk -F: -v min="$MIN_COVERAGE" '
+            /^SF:/ { file = $2 }
+            /^LF:/ { total += $2; if (file ~ /\/(domain|data)\//) ltotal += $2 }
+            /^LH:/ { hit += $2;   if (file ~ /\/(domain|data)\//) lhit += $2 }
+            END {
+              all = total ? 100 * hit / total : 0
+              layers = ltotal ? 100 * lhit / ltotal : 100
+              printf "Total: %.1f %% (%d/%d lines)\n", all, hit, total
+              printf "domain/ + data/: %.1f %% (%d/%d lines)\n", layers, lhit, ltotal
+              printf "### Cobertura\n\n| Alcance | %% |\n| --- | --- |\n| Total | %.1f |\n| domain/ + data/ | %.1f |\n", all, layers >> ENVIRON["GITHUB_STEP_SUMMARY"]
+              if (all < min || layers < min) { print "Coverage below " min " %"; exit 1 }
+            }' coverage/lcov.info
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcov
+          path: app/coverage/lcov.info
+          if-no-files-found: ignore
+
+      - name: Build debug APK
+        run: flutter build apk --debug
