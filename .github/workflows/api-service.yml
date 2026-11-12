@@ -1,0 +1,77 @@
+name: api-service
+
+# Smoke test of the BOOKIA API as a Docker service (docs/CONSTITUTION.md §8,
+# DOC-01, DOC-02). Mark the "api-service" check as required on main and develop.
+#
+# The API code is not in this repo: the job clones it next to BookiaMobile,
+# exactly like docker-compose.yml expects (../BookiaAPI).
+# If the API repo is private, add a read-only token as the BOOKIA_API_TOKEN secret.
+
+on:
+  pull_request:
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-service-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api-service:
+    name: api-service
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: BookiaMobile
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: BookiaMobile
+
+      - uses: actions/checkout@v7
+        with:
+          repository: BOOKIA-S/BookiaAPI
+          token: ${{ secrets.BOOKIA_API_TOKEN || github.token }}
+          path: BookiaAPI
+
+      # Throwaway values for CI only; the real .env is never committed (DOC-04).
+      - name: Create CI .env
+        run: |
+          cp .env.example .env
+          sed -i "s/^JWT_SECRET=.*/JWT_SECRET=$(openssl rand -hex 48)/" .env
+          sed -i "s/^ADMIN_PASSWORD=.*/ADMIN_PASSWORD=$(openssl rand -hex 12)/" .env
+
+      - name: Build the API image (docker/api/Dockerfile)
+        run: docker compose build api
+
+      - name: Start MongoDB + API
+        run: docker compose up -d --wait --wait-timeout 120
+
+      - name: Smoke test GET /api/health
+        run: |
+          body=$(curl -fsS --retry 10 --retry-delay 3 --retry-all-errors \
+            http://localhost:4000/api/health)
+          echo "$body"
+          echo "$body" | grep -q '"status":"ok"'
+
+      - name: Load the seed data
+        run: docker compose --profile tools run --rm seed
+
+      - name: Smoke test GET /api/books
+        run: |
+          body=$(curl -fsS "http://localhost:4000/api/books?limit=1")
+          echo "${body:0:400}"
+          echo "$body" | grep -q '"items"'
+
+      - name: Show logs
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Stop services
+        if: always()
+        run: docker compose down -v
