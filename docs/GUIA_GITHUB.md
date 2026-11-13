@@ -27,14 +27,14 @@
 3. **Instalar:**
    - **Git:** https://git-scm.com/downloads. En Windows incluye *Git Bash*, que es la terminal que usaremos.
    - **Docker Desktop:** https://www.docker.com/products/docker-desktop. Hay que abrirlo antes de usar `docker`.
-   - **Flutter**, en la versión que diga `.fvmrc`, y Android Studio con un emulador.
+   - **Flutter**, en la versión que diga `.fvmrc` cuando exista, y Android Studio con un emulador.
    - **VS Code** con las extensiones Flutter y Dart.
-4. **Decirle a Git quién eres.** Usa el mismo correo de tu cuenta de GitHub; si no, tus commits no cuentan como tuyos:
+4. **Decirle a Git quién eres.** Usa un correo asociado a tu cuenta de GitHub (puede ser el `noreply` de esa cuenta); no uses el de otra persona. Dentro del clon:
 
    ```bash
-   git config --global user.name "Nombre Apellido"
-   git config --global user.email "tu-correo-de-github@ejemplo.com"
-   git config --global pull.rebase false
+   git config user.name "Nombre Apellido"
+   git config user.email "tu-correo-de-github@ejemplo.com"
+   git config user.name && git config user.email
    ```
 
 5. **Clonar los dos repos uno junto al otro:**
@@ -42,11 +42,11 @@
    ```bash
    mkdir mis-proyectos && cd mis-proyectos
    git clone https://github.com/imdestro1/bookia.git
-   git clone https://github.com/imDestro1/BookiaMobile.git
+   git clone https://github.com/BOOKIA-S/BookiaMobile.git
    cd BookiaMobile
    ```
 
-   La primera vez que hagas `git push`, Windows abrirá una ventana para iniciar sesión en GitHub. Acepta.
+   Al hacer `git push` Git puede solicitar iniciar sesión. Si GitHub rechaza la operación por falta de permisos, avisa a Jaime; no compartas contraseñas ni tokens.
 
 6. **Levantar la API con Docker:**
 
@@ -65,17 +65,20 @@
 
 ## 3. El flujo de cada commit (todas las semanas)
 
-**Paso 1. Ver tu tarea.** En GitHub, en *Projects* o *Issues*, busca el issue con tu nombre y anota su número (por ejemplo `#23`). El mensaje de commit exacto está en el Plan de commits.
+**Paso 1. Ver tu tarea.** Busca el issue asignado en *Projects* o *Issues*. Los números de abajo son ejemplos, no issues reales: pide el número a Jaime antes de usar `Refs #n` o `Closes #n`. Usa la rama y el mensaje de tu tarea en `docs/PLAN.md` (`docs/…` y `chore/…` para esas tareas, no `feature/…`).
 
-**Paso 2. Ponerte al día y crear tu rama:**
+**Paso 2. Ponerte al día y crear tu rama.** Si `git status --short` muestra cambios ajenos o tuyos sin guardar, no cambies de rama ni hagas `pull`: consulta cómo aislarlos sin perderlos. Si la rama ya existe, no uses `-b` de nuevo.
 
 ```bash
+git status --short
 git checkout develop
-git pull origin develop
+git pull --ff-only origin develop
 git checkout -b feature/23-book-detail
 ```
 
-**Paso 3. Programar** (con ayuda de tu Claude) y revisar:
+Si `pull --ff-only` falla porque la historia diverge, detente y consulta a Jaime; no fuerces ni reinicies ramas.
+
+**Paso 3. Programar** (con ayuda de tu Claude). Cuando `app/` exista, revisar:
 
 ```bash
 cd app
@@ -90,8 +93,11 @@ cd ..
 ```bash
 git status                 # muestra qué archivos cambiaste
 git add app/lib/features/books app/test/features/books
+git diff --cached          # confirma contenido y archivos de tu tarea
 git commit -m "feat(books): add book detail screen with store comparison" -m "Refs #23"
 ```
+
+Para documentación o scripts, prepara solo los archivos asignados en el Plan. No uses `git add .` con trabajo ajeno; `git push` solo publica commits, no archivos sin confirmar.
 
 **Paso 5. Subir tu rama:**
 
@@ -128,10 +134,10 @@ git push -u origin feature/23-book-detail
 
 | Mensaje o situación | Qué hacer |
 | --- | --- |
-| `rejected ... (fetch first)` al hacer push | `git pull origin <tu-rama>` y repite `git push` |
+| `rejected ... (fetch first)` al hacer push | No fuerces ni hagas `pull` a ciegas: revisa `git status` y pide ayuda a Jaime para incorporar el trabajo remoto sin perder el tuyo. |
 | El PR dice **This branch has conflicts** | No lo arregles a ciegas: avisa a Jaime en el grupo con el enlace del PR |
-| Hiciste commit en `develop` por error | Antes de hacer push: `git branch feature/<n>-<nombre>`, luego `git reset --hard origin/develop` y `git checkout feature/<n>-<nombre>` |
-| Te equivocaste en el mensaje del último commit (aún sin push) | `git commit --amend -m "mensaje correcto"` |
+| Hiciste commit en `develop` por error | No hagas push ni uses `reset --hard`: conserva el trabajo y pide ayuda a Jaime para mover el commit a una rama. |
+| Te equivocaste en el mensaje del último commit | Si aún no lo publicaste, `git commit --amend -m "mensaje correcto"` cambia su hash; si ya lo publicaste, consulta a Jaime y no reescribas historia. |
 | El check rojo **commitlint** | El mensaje no sigue el formato. Pide a tu Claude que te ayude a corregirlo y avisa a Jaime |
 | El check rojo **app-ci** | Corre `flutter analyze` y `flutter test` en tu máquina, corrige y vuelve a hacer push |
 | `docker: command not found` o error de conexión | Abre Docker Desktop y espera a que diga *Running* |
