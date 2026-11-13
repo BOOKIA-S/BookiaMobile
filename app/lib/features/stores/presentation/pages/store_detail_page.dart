@@ -2,6 +2,7 @@ import 'package:bookia_mobile/app/theme/app_spacing.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
 import 'package:bookia_mobile/features/stores/domain/entities/store.dart';
 import 'package:bookia_mobile/features/stores/presentation/controllers/store_detail_controller.dart';
+import 'package:bookia_mobile/features/stores/presentation/widgets/store_actions_bar.dart';
 import 'package:bookia_mobile/features/stores/presentation/widgets/store_offer_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,6 +53,8 @@ class _StoreBody extends StatelessWidget {
         if (store.schedule != null)
           _InfoRow(Icons.schedule_outlined, store.schedule!),
         if (store.phone != null) _InfoRow(Icons.phone_outlined, store.phone!),
+        const SizedBox(height: AppSpacing.lg),
+        StoreActionsBar(store: store),
         const SizedBox(height: AppSpacing.xl),
         Text('Catálogo (${offers.length})', style: text.titleMedium),
         const SizedBox(height: AppSpacing.sm),
