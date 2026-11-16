@@ -1,3 +1,5 @@
+import 'package:bookia_mobile/features/search/domain/sort/sort_strategy.dart';
+
 /// Filters of screen 05. Null means "any"; the price range is $50–$300.
 class SearchFilters {
   const SearchFilters({
@@ -6,6 +8,7 @@ class SearchFilters {
     this.minPrice,
     this.maxPrice,
     this.onlyAvailable = false,
+    this.sort = SortOption.title,
   });
 
   static const priceFloor = 50.0;
@@ -22,6 +25,9 @@ class SearchFilters {
   /// applied to the rows already loaded.
   final bool onlyAvailable;
 
+  /// Order of the rows; applied on the device, `GET /books` sorts by title.
+  final SortOption sort;
+
   /// Number of active filters, for the badge of the filters button.
   int get activeCount => [
     genre != null,
@@ -30,13 +36,15 @@ class SearchFilters {
     onlyAvailable,
   ].where((active) => active).length;
 
-  SearchFilters copyWith({bool? onlyAvailable}) => SearchFilters(
-    genre: genre,
-    storeId: storeId,
-    minPrice: minPrice,
-    maxPrice: maxPrice,
-    onlyAvailable: onlyAvailable ?? this.onlyAvailable,
-  );
+  SearchFilters copyWith({bool? onlyAvailable, SortOption? sort}) =>
+      SearchFilters(
+        genre: genre,
+        storeId: storeId,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        onlyAvailable: onlyAvailable ?? this.onlyAvailable,
+        sort: sort ?? this.sort,
+      );
 
   @override
   bool operator ==(Object other) =>
@@ -45,11 +53,12 @@ class SearchFilters {
       other.storeId == storeId &&
       other.minPrice == minPrice &&
       other.maxPrice == maxPrice &&
-      other.onlyAvailable == onlyAvailable;
+      other.onlyAvailable == onlyAvailable &&
+      other.sort == sort;
 
   @override
   int get hashCode =>
-      Object.hash(genre, storeId, minPrice, maxPrice, onlyAvailable);
+      Object.hash(genre, storeId, minPrice, maxPrice, onlyAvailable, sort);
 }
 
 /// A store of the "Establecimiento" filter.
