@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bookia_mobile/core/error/failure.dart';
 import 'package:bookia_mobile/features/search/domain/entities/book_summary.dart';
+import 'package:bookia_mobile/features/search/domain/entities/search_filters.dart';
 import 'package:bookia_mobile/features/search/presentation/controllers/search_results_controller.dart';
 import 'package:bookia_mobile/features/search/presentation/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +27,8 @@ BookPage _page(int n, int size, {int total = 30}) => BookPage(
   page: n,
 );
 
-const _query = (q: null, genre: 'Poesía');
+const _filters = SearchFilters(genre: 'Poesía');
+const _query = (q: null, filters: _filters);
 
 /// ViewModel tests of screen 04 (PRU-01).
 void main() {
@@ -44,7 +46,7 @@ void main() {
   });
 
   void answer(int n, Future<BookPage> Function() result) =>
-      when(() => repo.search(q: null, genre: 'Poesía', page: n))
+      when(() => repo.search(q: null, filters: _filters, page: n))
           .thenAnswer((_) => result());
 
   /// Keeps the auto-dispose provider alive; call it after the answers.
@@ -106,7 +108,7 @@ void main() {
     pending.complete(_page(2, 10));
     await first;
 
-    verify(() => repo.search(q: null, genre: 'Poesía', page: 2)).called(1);
+    verify(() => repo.search(q: null, filters: _filters, page: 2)).called(1);
     expect(value().items.length, 30);
     expect(value().hasMore, isFalse);
   });
@@ -120,6 +122,6 @@ void main() {
     pending.complete(_page(1, 5, total: 5));
     await c.read(searchResultsProvider(_query).future);
 
-    verifyNever(() => repo.search(q: null, genre: 'Poesía', page: 2));
+    verifyNever(() => repo.search(q: null, filters: _filters, page: 2));
   });
 }

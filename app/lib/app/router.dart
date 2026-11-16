@@ -4,6 +4,7 @@ import 'package:bookia_mobile/features/auth/presentation/pages/auth_page.dart';
 import 'package:bookia_mobile/features/books/presentation/pages/book_detail_page.dart';
 import 'package:bookia_mobile/features/home/presentation/pages/home_page.dart';
 import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
+import 'package:bookia_mobile/features/search/presentation/search_query.dart';
 import 'package:bookia_mobile/features/splash/presentation/pages/splash_page.dart';
 import 'package:bookia_mobile/features/stores/presentation/pages/store_detail_page.dart';
 import 'package:bookia_mobile/features/stores/presentation/pages/stores_list_page.dart';
@@ -47,13 +48,10 @@ StatefulShellBranch _tab(
   ],
 );
 
-Widget _results(GoRouterState state) {
-  final params = state.uri.queryParameters;
-  return SearchResultsPage(
-    key: ValueKey(state.uri),
-    query: (q: params['q'], genre: params['genre']),
-  );
-}
+Widget _results(GoRouterState state) => SearchResultsPage(
+  key: ValueKey(state.uri),
+  query: searchQueryFrom(state.uri.queryParameters),
+);
 
 /// Builds the app router. A new instance per call keeps tests isolated.
 GoRouter createRouter({String initialLocation = AppRoutes.home}) => GoRouter(

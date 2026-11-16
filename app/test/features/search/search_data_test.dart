@@ -47,7 +47,15 @@ void main() {
         query: captureAny(named: 'query'),
       ),
     ).captured.single;
-    expect(query, {'q': 'rulfo', 'genre': null, 'page': 2, 'limit': 20});
+    expect(query, {
+      'q': 'rulfo',
+      'genre': null,
+      'store_id': null,
+      'min_price': null,
+      'max_price': null,
+      'page': 2,
+      'limit': 20,
+    });
   });
 
   test('availability is green, amber (≤ 2) or grey (sold out)', () {

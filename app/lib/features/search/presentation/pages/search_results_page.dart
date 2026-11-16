@@ -16,7 +16,9 @@ class SearchResultsPage extends ConsumerWidget {
     final provider = searchResultsProvider(query);
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: Text(query.genre ?? query.q ?? 'Resultados')),
+      appBar: AppBar(
+        title: Text(query.filters.genre ?? query.q ?? 'Resultados'),
+      ),
       body: ref
           .watch(provider)
           .when(
