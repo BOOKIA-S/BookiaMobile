@@ -1,9 +1,11 @@
 import 'package:bookia_mobile/app/router.dart';
 import 'package:bookia_mobile/app/theme/app_spacing.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
+import 'package:bookia_mobile/features/search/domain/entities/search_filters.dart';
 import 'package:bookia_mobile/features/search/presentation/controllers/search_results_controller.dart';
 import 'package:bookia_mobile/features/search/presentation/widgets/book_result_tile.dart';
 import 'package:bookia_mobile/features/search/presentation/widgets/filters_sheet.dart';
+import 'package:bookia_mobile/features/search/presentation/widgets/quick_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,6 +19,10 @@ class SearchResultsPage extends ConsumerWidget {
   Future<void> _openFilters(BuildContext context) async {
     final filters = await showFiltersSheet(context, query);
     if (filters == null || !context.mounted) return;
+    _apply(context, filters);
+  }
+
+  void _apply(BuildContext context, SearchFilters filters) {
     final params = searchQueryParams((q: query.q, filters: filters));
     context.go(Uri(path: AppRoutes.search, queryParameters: params).toString());
   }
@@ -39,6 +45,10 @@ class SearchResultsPage extends ConsumerWidget {
             ),
           ),
         ],
+        bottom: QuickChips(
+          filters: query.filters,
+          onChanged: (f) => _apply(context, f),
+        ),
       ),
       body: ref
           .watch(provider)

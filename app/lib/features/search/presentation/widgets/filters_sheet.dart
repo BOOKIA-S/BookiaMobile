@@ -1,6 +1,7 @@
 import 'package:bookia_mobile/app/theme/app_spacing.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
 import 'package:bookia_mobile/features/search/domain/entities/search_filters.dart';
+import 'package:bookia_mobile/features/search/domain/sort/sort_strategy.dart';
 import 'package:bookia_mobile/features/search/presentation/providers.dart';
 import 'package:bookia_mobile/features/search/presentation/search_query.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,8 @@ Future<SearchFilters?> showFiltersSheet(
   builder: (_) => FiltersSheet(query: query),
 );
 
-/// Screen 05 Filtros: genre, store, price $50–$300 and "Solo disponibles".
+/// Screen 05 Filtros: genre, store, price $50–$300, "Solo disponibles" and
+/// the order of the results (PAT-09).
 class FiltersSheet extends ConsumerStatefulWidget {
   const FiltersSheet({required this.query, super.key});
 
@@ -40,6 +42,7 @@ class _FiltersSheetState extends ConsumerState<FiltersSheet> {
     widget.query.filters.maxPrice ?? _full.end,
   );
   late bool _onlyAvailable = widget.query.filters.onlyAvailable;
+  late SortOption _sort = widget.query.filters.sort;
 
   /// The draft; a range at its limits sends no price filter.
   SearchFilters get _draft => SearchFilters(
@@ -48,6 +51,7 @@ class _FiltersSheetState extends ConsumerState<FiltersSheet> {
     minPrice: _price.start > _full.start ? _price.start : null,
     maxPrice: _price.end < _full.end ? _price.end : null,
     onlyAvailable: _onlyAvailable,
+    sort: _sort,
   );
 
   void _clear() => setState(() {
@@ -55,6 +59,7 @@ class _FiltersSheetState extends ConsumerState<FiltersSheet> {
     _storeId = null;
     _price = _full;
     _onlyAvailable = false;
+    _sort = SortOption.title;
   });
 
   @override
@@ -113,6 +118,9 @@ class _FiltersSheetState extends ConsumerState<FiltersSheet> {
               value: _onlyAvailable,
               onChanged: (v) => setState(() => _onlyAvailable = v),
             ),
+            Text('Ordenar por', style: text.titleSmall),
+            const SizedBox(height: AppSpacing.sm),
+            _sortSelector(),
             const SizedBox(height: AppSpacing.md),
             Row(
               children: [
@@ -127,6 +135,37 @@ class _FiltersSheetState extends ConsumerState<FiltersSheet> {
           ],
         ),
       ),
+    );
+  }
+
+  /// Distance needs the position of the user (screen 02).
+  Widget _sortSelector() {
+    final nearby = ref.watch(canSortByDistanceProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SegmentedButton<SortOption>(
+          segments: [
+            const ButtonSegment(value: SortOption.title, label: Text('Título')),
+            const ButtonSegment(value: SortOption.price, label: Text('Precio')),
+            ButtonSegment(
+              value: SortOption.distance,
+              label: const Text('Distancia'),
+              enabled: nearby,
+            ),
+          ],
+          selected: {_sort},
+          onSelectionChanged: (s) => setState(() => _sort = s.single),
+        ),
+        if (!nearby)
+          Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.xs),
+            child: Text(
+              'Activa tu ubicación para ordenar por distancia.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+      ],
     );
   }
 

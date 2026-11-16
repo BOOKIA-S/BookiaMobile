@@ -1,4 +1,5 @@
 import 'package:bookia_mobile/features/search/domain/entities/book_summary.dart';
+import 'package:bookia_mobile/features/search/domain/sort/sort_strategy.dart';
 import 'package:bookia_mobile/features/search/presentation/providers.dart';
 import 'package:bookia_mobile/features/search/presentation/search_query.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +12,7 @@ class SearchResults {
     required this.total,
     required this.page,
     this.onlyAvailable = false,
+    this.strategy = const SortByTitle(),
     this.loadingMore = false,
   });
 
@@ -19,14 +21,20 @@ class SearchResults {
   final int total;
   final int page;
   final bool onlyAvailable;
+
+  /// Order chosen in screen 05 or with the quick chips (PAT-09).
+  final SortStrategy strategy;
   final bool loadingMore;
 
   bool get hasMore => items.length < total;
 
-  /// The rows to paint: without sold-out books when "Solo disponibles" is on.
-  List<BookSummary> get visible => onlyAvailable
-      ? items.where((b) => b.availability != Availability.soldOut).toList()
-      : items;
+  /// The rows to paint: sorted by [strategy], and without sold-out books
+  /// when "Solo disponibles" is on.
+  List<BookSummary> get visible => strategy.sort(
+    onlyAvailable
+        ? items.where((b) => b.availability != Availability.soldOut).toList()
+        : items,
+  );
 }
 
 /// ViewModel (PAT-02) of screen 04 with infinite scroll.
@@ -34,6 +42,7 @@ class SearchResultsController extends AsyncNotifier<SearchResults> {
   SearchResultsController(this.query);
 
   final SearchQuery query;
+  SortStrategy _strategy = const SortByTitle();
 
   Future<SearchResults> _fetch(int page, List<BookSummary> previous) async {
     final result = await ref
@@ -44,11 +53,21 @@ class SearchResultsController extends AsyncNotifier<SearchResults> {
       total: result.total,
       page: result.page,
       onlyAvailable: query.filters.onlyAvailable,
+      strategy: _strategy,
     );
   }
 
   @override
-  Future<SearchResults> build() => _fetch(1, const []);
+  Future<SearchResults> build() async {
+    final option = query.filters.sort;
+    _strategy = sortStrategyFor(
+      option,
+      kmByStore: option == SortOption.distance
+          ? await ref.watch(storeDistancesProvider.future)
+          : const {},
+    );
+    return _fetch(1, const []);
+  }
 
   /// Loads the next page; a failure keeps the rows already shown.
   Future<void> loadMore() async {
@@ -60,6 +79,7 @@ class SearchResultsController extends AsyncNotifier<SearchResults> {
         total: current.total,
         page: current.page,
         onlyAvailable: current.onlyAvailable,
+        strategy: current.strategy,
         loadingMore: true,
       ),
     );
