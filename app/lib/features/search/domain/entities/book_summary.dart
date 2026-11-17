@@ -10,6 +10,7 @@ class BookSummary {
     required this.minPrice,
     required this.totalStock,
     required this.storeCount,
+    this.storeIds = const [],
   });
 
   final String id;
@@ -23,6 +24,9 @@ class BookSummary {
 
   /// Stores that have at least one copy.
   final int storeCount;
+
+  /// Ids of those stores, for the distance order (PAT-09).
+  final List<String> storeIds;
 
   /// Green when in stock, amber when 2 or fewer copies, grey when sold out.
   Availability get availability => totalStock <= 0

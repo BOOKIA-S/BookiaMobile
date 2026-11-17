@@ -1,9 +1,11 @@
 import 'package:bookia_mobile/features/search/domain/entities/search_filters.dart';
+import 'package:bookia_mobile/features/search/domain/sort/sort_strategy.dart';
 
 /// What screen 04 shows: the text typed in 03 and the filters of 05.
 typedef SearchQuery = ({String? q, SearchFilters filters});
 
-/// Reads `/search?q=&genre=&store_id=&min_price=&max_price=&available=`.
+/// Reads the `/search` params: q, genre, store_id, min_price, max_price,
+/// available and sort.
 SearchQuery searchQueryFrom(Map<String, String> params) => (
   q: params['q'],
   filters: SearchFilters(
@@ -12,6 +14,7 @@ SearchQuery searchQueryFrom(Map<String, String> params) => (
     minPrice: double.tryParse(params['min_price'] ?? ''),
     maxPrice: double.tryParse(params['max_price'] ?? ''),
     onlyAvailable: params['available'] == 'true',
+    sort: SortOption.values.asNameMap()[params['sort']] ?? SortOption.title,
   ),
 );
 
@@ -25,5 +28,6 @@ Map<String, String> searchQueryParams(SearchQuery query) {
     if (f.minPrice != null) 'min_price': '${f.minPrice!.round()}',
     if (f.maxPrice != null) 'max_price': '${f.maxPrice!.round()}',
     if (f.onlyAvailable) 'available': 'true',
+    if (f.sort != SortOption.title) 'sort': f.sort.name,
   };
 }

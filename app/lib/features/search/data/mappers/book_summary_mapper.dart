@@ -11,5 +11,6 @@ extension BookSummaryMapper on BookSummaryDto {
     minPrice: minPrice,
     totalStock: totalStock,
     storeCount: availableOffers,
+    storeIds: availableStoreIds,
   );
 }
