@@ -1,5 +1,6 @@
 import 'package:bookia_mobile/core/error/failure.dart';
 import 'package:bookia_mobile/features/search/domain/entities/book_summary.dart';
+import 'package:bookia_mobile/features/search/domain/entities/search_filters.dart';
 import 'package:bookia_mobile/features/search/presentation/controllers/search_results_controller.dart';
 import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
 import 'package:bookia_mobile/features/search/presentation/providers.dart';
@@ -26,15 +27,15 @@ BookPage page(int n, {int total = 25}) => BookPage(
   page: n,
 );
 
-const query = (q: 'libro', genre: null);
+const query = (q: 'libro', filters: SearchFilters());
 
 void main() {
   late MockSearchRepository repo;
   setUp(() => repo = MockSearchRepository());
 
-  void answer(int n, Future<BookPage> Function() result) =>
-      when(() => repo.search(q: 'libro', genre: null, page: n))
-          .thenAnswer((_) => result());
+  void answer(int n, Future<BookPage> Function() result) => when(
+    () => repo.search(q: 'libro', filters: const SearchFilters(), page: n),
+  ).thenAnswer((_) => result());
 
   test('loadMore appends the next page until total is reached', () async {
     answer(1, () async => page(1));
@@ -53,7 +54,9 @@ void main() {
     expect(r.hasMore, isFalse);
 
     await c.read(searchResultsProvider(query).notifier).loadMore();
-    verifyNever(() => repo.search(q: 'libro', genre: null, page: 3));
+    verifyNever(
+      () => repo.search(q: 'libro', filters: const SearchFilters(), page: 3),
+    );
   });
 
   Future<void> pump(WidgetTester tester) => tester.pumpWidget(

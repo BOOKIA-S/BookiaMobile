@@ -2,6 +2,7 @@ import 'package:bookia_mobile/core/error/failure.dart';
 import 'package:bookia_mobile/features/search/data/dto/book_summary_dto.dart';
 import 'package:bookia_mobile/features/search/data/mappers/book_summary_mapper.dart';
 import 'package:bookia_mobile/features/search/data/repositories/search_repository_impl.dart';
+import 'package:bookia_mobile/features/search/domain/entities/search_filters.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/fake_http_adapter.dart';
@@ -19,7 +20,8 @@ void main() {
       'limit': 20,
     });
 
-    await repoWith(adapter).search(genre: 'Novela', page: 3);
+    await repoWith(adapter)
+        .search(filters: const SearchFilters(genre: 'Novela'), page: 3);
 
     expect(adapter.last!.path, '/books');
     expect(adapter.last!.queryParameters, {

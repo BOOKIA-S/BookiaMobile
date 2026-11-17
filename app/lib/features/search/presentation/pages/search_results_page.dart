@@ -1,9 +1,12 @@
+import 'package:bookia_mobile/app/router.dart';
 import 'package:bookia_mobile/app/theme/app_spacing.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
 import 'package:bookia_mobile/features/search/presentation/controllers/search_results_controller.dart';
 import 'package:bookia_mobile/features/search/presentation/widgets/book_result_tile.dart';
+import 'package:bookia_mobile/features/search/presentation/widgets/filters_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 /// Screen 04 Resultados: paginated list (20 per page, infinite scroll).
 class SearchResultsPage extends ConsumerWidget {
@@ -11,12 +14,32 @@ class SearchResultsPage extends ConsumerWidget {
 
   final SearchQuery query;
 
+  Future<void> _openFilters(BuildContext context) async {
+    final filters = await showFiltersSheet(context, query);
+    if (filters == null || !context.mounted) return;
+    final params = searchQueryParams((q: query.q, filters: filters));
+    context.go(Uri(path: AppRoutes.search, queryParameters: params).toString());
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = searchResultsProvider(query);
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: Text(query.genre ?? query.q ?? 'Resultados')),
+      appBar: AppBar(
+        title: Text(query.filters.genre ?? query.q ?? 'Resultados'),
+        actions: [
+          IconButton(
+            tooltip: 'Filtros',
+            onPressed: () => _openFilters(context),
+            icon: Badge(
+              isLabelVisible: query.filters.activeCount > 0,
+              label: Text('${query.filters.activeCount}'),
+              child: const Icon(Icons.tune),
+            ),
+          ),
+        ],
+      ),
       body: ref
           .watch(provider)
           .when(
@@ -42,27 +65,40 @@ class SearchResultsPage extends ConsumerWidget {
                     },
                     child: ListView.separated(
                       padding: const EdgeInsets.all(AppSpacing.lg),
-                      itemCount: r.items.length + 2,
+                      itemCount: r.visible.length + 2,
                       separatorBuilder: (_, _) =>
                           const SizedBox(height: AppSpacing.sm),
                       itemBuilder: (_, i) {
                         if (i == 0) {
-                          final noun = r.total == 1 ? 'libro' : 'libros';
+                          final found = r.total == 1
+                              ? 'libro encontrado'
+                              : 'libros encontrados';
                           return Text(
-                            '${r.total} $noun encontrados',
+                            r.onlyAvailable
+                                ? '${r.total} $found · solo disponibles'
+                                : '${r.total} $found',
                             style: text.titleSmall,
                           );
                         }
-                        if (i > r.items.length) {
-                          return r.loadingMore
-                              ? const Center(child: CircularProgressIndicator())
-                              : const SizedBox.shrink();
-                        }
-                        return BookResultTile(book: r.items[i - 1]);
+                        if (i > r.visible.length) return _footer(ref, r);
+                        return BookResultTile(book: r.visible[i - 1]);
                       },
                     ),
                   ),
           ),
+    );
+  }
+
+  /// Loader while a page arrives; "Cargar más" when hidden sold-out rows
+  /// leave too little to scroll.
+  Widget _footer(WidgetRef ref, SearchResults r) {
+    if (r.loadingMore) return const Center(child: CircularProgressIndicator());
+    if (!r.hasMore) return const SizedBox.shrink();
+    return Center(
+      child: TextButton(
+        onPressed: ref.read(searchResultsProvider(query).notifier).loadMore,
+        child: const Text('Cargar más'),
+      ),
     );
   }
 }
