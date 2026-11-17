@@ -1,0 +1,174 @@
+name: release
+
+# Weekly release (docs/CONSTITUTION.md §6.5 and §8). Runs when a vX.Y.Z tag is
+# pushed on main: builds the release APK, publishes the API image to ghcr.io
+# with the same tag (DOC-06) and creates the GitHub Release with the APK and
+# the dependency report (LIC-02). A published Release is a "deployment" for
+# DORA (§9, S-3).
+#
+# Optional secrets to sign the APK with the release key:
+#   ANDROID_KEYSTORE_BASE64   base64 of the .jks file
+#   ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+# Without them the APK is signed with the debug key (installable for tests).
+# BOOKIA_API_TOKEN: read-only token for BOOKIA-S/BookiaAPI (same as api-service).
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re)publish, e.g. v0.3.0"
+        required: true
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  apk:
+    name: apk
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: app/pubspec.yaml
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Prepare the release key (optional)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+            echo "Firma: llave de release" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Firma: llave de depuración (faltan los secretos ANDROID_KEYSTORE_*)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Build release APK
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: |
+          version="${TAG#v}"
+          flutter build apk --release \
+            --build-name="$version" \
+            --build-number="${{ github.run_number }}" \
+            --dart-define=API_BASE_URL="${API_BASE_URL:-http://10.0.2.2:4000/api}"
+          mkdir -p ../dist
+          cp build/app/outputs/flutter-apk/app-release.apk "../dist/bookia-$TAG.apk"
+          (cd ../dist && sha256sum "bookia-$TAG.apk" > "bookia-$TAG.apk.sha256")
+
+      - name: Dependency report (LIC-02)
+        run: |
+          {
+            echo "BOOKIA Móvil $TAG: dependencias de la app (flutter pub deps)"
+            echo
+            flutter pub deps --style=compact
+          } > "../dist/dependencias-$TAG.txt"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: dist/
+          if-no-files-found: error
+
+  api-image:
+    name: api-image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+          path: BookiaMobile
+
+      - uses: actions/checkout@v7
+        with:
+          repository: BOOKIA-S/BookiaAPI
+          token: ${{ secrets.BOOKIA_API_TOKEN || github.token }}
+          path: BookiaAPI
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image name
+        id: image
+        run: |
+          name="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/bookia-api"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "Imagen: \`$name:$TAG\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build and push the API image (DOC-06)
+        uses: docker/build-push-action@v6
+        with:
+          context: BookiaMobile/docker/api
+          build-contexts: api_src=BookiaAPI
+          push: true
+          tags: |
+            ${{ steps.image.outputs.name }}:${{ env.TAG }}
+            ${{ steps.image.outputs.name }}:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ env.TAG }}
+
+  publish:
+    name: publish
+    needs: [apk, api-image]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: apk
+          path: dist
+
+      - name: Release notes header
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/bookia-api:$TAG"
+          {
+            echo "APK: \`bookia-$TAG.apk\` (Android 7.0 o superior)."
+            echo "Imagen de la API: \`$image\`"
+          } > notes.md
+
+      - name: Create the GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: BOOKIA Móvil ${{ env.TAG }}
+          body_path: notes.md
+          generate_release_notes: true
+          files: dist/*
