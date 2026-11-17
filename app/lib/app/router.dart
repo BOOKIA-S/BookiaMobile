@@ -8,6 +8,7 @@ import 'package:bookia_mobile/features/onboarding/presentation/pages/location_pe
 import 'package:bookia_mobile/features/reservations/domain/entities/reservation.dart';
 import 'package:bookia_mobile/features/reservations/presentation/pages/reservation_ready_page.dart';
 import 'package:bookia_mobile/features/reservations/presentation/pages/reserve_page.dart';
+import 'package:bookia_mobile/features/scanner/presentation/pages/scanner_page.dart';
 import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
 import 'package:bookia_mobile/features/search/presentation/search_query.dart';
 import 'package:bookia_mobile/features/splash/presentation/pages/splash_page.dart';
@@ -32,6 +33,9 @@ abstract final class AppRoutes {
   static const staff = '/staff';
   static const stores = '/stores';
   static const storeDetail = '/stores/:id';
+
+  /// Screen 06, opened from the search bar on 03 Inicio.
+  static const scan = '/scan';
 
   /// Screen 07, full screen over the bottom bar.
   static String book(String id) => '/books/$id';
@@ -129,6 +133,7 @@ GoRouter createRouter({
     GoRoute(path: AppRoutes.auth, builder: (_, _) => const AuthPage()),
     GoRoute(path: AppRoutes.staff, builder: (_, _) => const StaffPanelPage()),
     GoRoute(path: AppRoutes.stores, builder: (_, _) => const StoresListPage()),
+    GoRoute(path: AppRoutes.scan, builder: (_, _) => const ScannerPage()),
     GoRoute(
       path: AppRoutes.storeDetail,
       builder: (_, state) => StoreDetailPage(
