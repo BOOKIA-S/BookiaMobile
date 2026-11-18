@@ -1,8 +1,20 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Screen 08: Google Maps key from android/local.properties (MAPS_API_KEY),
+// which is not in Git. Without it the map stays grey; nothing else breaks.
+val mapsApiKey: String =
+    Properties()
+        .apply {
+            val file = rootProject.file("local.properties")
+            if (file.exists()) file.inputStream().use { load(it) }
+        }
+        .getProperty("MAPS_API_KEY", "")
 
 android {
     namespace = "mx.bookia.bookia_mobile"
@@ -28,6 +40,7 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     // Release key comes from CI secrets (.github/workflows/release.yml); never

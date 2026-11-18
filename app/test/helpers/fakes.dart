@@ -8,6 +8,8 @@ import 'package:bookia_mobile/features/search/domain/entities/book_summary.dart'
 import 'package:bookia_mobile/features/search/domain/entities/search_filters.dart';
 import 'package:bookia_mobile/features/search/domain/repositories/search_repository.dart';
 import 'package:bookia_mobile/features/search/presentation/providers.dart';
+import 'package:bookia_mobile/features/stores/domain/repositories/store_repository.dart';
+import 'package:bookia_mobile/features/stores/presentation/providers.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -16,6 +18,8 @@ class MockHomeRepository extends Mock implements HomeRepository {}
 class MockSearchRepository extends Mock implements SearchRepository {}
 
 class MockLocationService extends Mock implements LocationService {}
+
+class MockStoreRepository extends Mock implements StoreRepository {}
 
 class MockOnboardingRepository extends Mock implements OnboardingRepository {}
 
@@ -62,9 +66,17 @@ List<Override> offlineOverrides({
   ).thenAnswer((_) async => 0);
   when(search.getFilterOptions)
       .thenAnswer((_) async => FilterOptions(genres: genres, stores: const []));
+  final stores = MockStoreRepository();
+  when(
+    () => stores.getStores(
+      lat: any(named: 'lat'),
+      lng: any(named: 'lng'),
+    ),
+  ).thenAnswer((_) async => const []);
   return [
     homeRepositoryProvider.overrideWithValue(home),
     searchRepositoryProvider.overrideWithValue(search),
+    storeRepositoryProvider.overrideWithValue(stores),
     if (location) ...locationOverrides(),
   ];
 }

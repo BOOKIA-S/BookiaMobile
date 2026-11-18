@@ -13,6 +13,7 @@ import 'package:bookia_mobile/features/search/presentation/search_query.dart';
 import 'package:bookia_mobile/features/splash/presentation/pages/splash_page.dart';
 import 'package:bookia_mobile/features/stores/presentation/pages/store_detail_page.dart';
 import 'package:bookia_mobile/features/stores/presentation/pages/stores_list_page.dart';
+import 'package:bookia_mobile/features/stores/presentation/pages/stores_map_page.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -128,7 +129,7 @@ GoRouter createRouter({
       branches: [
         _tab(AppRoutes.home, 'Inicio', (_) => const HomePage()),
         _tab(AppRoutes.search, 'Buscar', _results),
-        _tab(AppRoutes.map, 'Mapa'),
+        _tab(AppRoutes.map, 'Mapa', (_) => const StoresMapPage()),
         _tab(AppRoutes.reservations, 'Mis reservas'),
         _tab(AppRoutes.profile, 'Perfil'),
       ],
