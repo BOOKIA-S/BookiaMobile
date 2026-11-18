@@ -14,6 +14,11 @@ class ReservationRemoteDataSource {
     body: {'offer_id': offerId, 'quantity': quantity},
   );
 
+  Future<Map<String, dynamic>> cancel(String id) =>
+      _api.patch<Map<String, dynamic>>(
+        '/reservations/${Uri.encodeComponent(id)}/cancel',
+      );
+
   Future<List<Map<String, dynamic>>> listMine() async {
     final json = await _api.get<Map<String, dynamic>>('/reservations/mine');
     final items = json['items'];

@@ -30,6 +30,20 @@ class ReservationRepositoryImpl implements ReservationRepository {
     ],
   );
 
+  @override
+  Future<Reservation> cancel(String id) async {
+    try {
+      return await _parse(
+        () async =>
+            ReservationDto.fromJson(await _remote.cancel(id)).toEntity(),
+      );
+    } on ConflictFailure {
+      throw const ConflictFailure('Esta reserva ya no se puede cancelar.');
+    } on NotFoundFailure {
+      throw const NotFoundFailure('No encontramos esta reserva.');
+    }
+  }
+
   /// Any error leaves data/ as a Failure (ARQ-05); the API messages are in
   /// English, so the create errors are translated here.
   static Future<T> _parse<T>(Future<T> Function() request) async {

@@ -7,4 +7,8 @@ abstract interface class ReservationRepository {
 
   /// `GET /reservations/mine`, most recent first.
   Future<List<Reservation>> listMine();
+
+  /// `PATCH /reservations/:id/cancel` -> the cancelled reservation. The copies
+  /// return to stock; 409 when it is no longer active (screen 12).
+  Future<Reservation> cancel(String id);
 }

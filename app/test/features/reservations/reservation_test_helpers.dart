@@ -118,4 +118,14 @@ class FakeReservationRepository implements ReservationRepository {
     listCalls++;
     return onList?.call() ?? Future.value([testReservation()]);
   }
+
+  final cancelled = <String>[];
+  Future<Reservation> Function(String id)? onCancel;
+
+  @override
+  Future<Reservation> cancel(String id) {
+    cancelled.add(id);
+    return onCancel?.call(id) ??
+        Future.value(testReservation(id: id, status: const Cancelled()));
+  }
 }
