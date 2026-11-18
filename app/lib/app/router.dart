@@ -3,6 +3,7 @@ import 'package:bookia_mobile/core/widgets/placeholder_page.dart';
 import 'package:bookia_mobile/features/auth/presentation/pages/auth_page.dart';
 import 'package:bookia_mobile/features/books/presentation/pages/book_detail_page.dart';
 import 'package:bookia_mobile/features/home/presentation/pages/home_page.dart';
+import 'package:bookia_mobile/features/reservations/presentation/pages/reserve_page.dart';
 import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
 import 'package:bookia_mobile/features/search/presentation/search_query.dart';
 import 'package:bookia_mobile/features/splash/presentation/pages/splash_page.dart';
@@ -29,6 +30,25 @@ abstract final class AppRoutes {
 
   /// Location of screen 09 for [id].
   static String store(String id) => '/stores/$id';
+
+  /// Screen 10 for [offerId] of [bookId].
+  static String reserve(String bookId, String offerId) =>
+      '/reserve/$bookId/$offerId';
+
+  static const reservePattern = '/reserve/:bookId/:offerId';
+
+  /// Login URL that returns to [next] (or to Perfil when it is null).
+  static String signIn({String? next}) => Uri(
+    path: auth,
+    queryParameters: next == null ? null : {'next': next},
+  ).toString();
+
+  /// After signing in, only an internal reserve continuation is honored, so
+  /// no arbitrary destination can be injected through the URL.
+  static String afterAuth(String? next) =>
+      next != null && next.startsWith('/reserve/') && !next.contains('://')
+      ? next
+      : profile;
 }
 
 StatefulShellBranch _tab(
@@ -81,6 +101,14 @@ GoRouter createRouter({String initialLocation = AppRoutes.home}) => GoRouter(
       path: '/books/:id',
       builder: (_, state) =>
           BookDetailPage(bookId: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: AppRoutes.reservePattern,
+      builder: (_, state) => ReservePage(
+        key: ValueKey(state.uri),
+        bookId: state.pathParameters['bookId']!,
+        offerId: state.pathParameters['offerId']!,
+      ),
     ),
   ],
 );
