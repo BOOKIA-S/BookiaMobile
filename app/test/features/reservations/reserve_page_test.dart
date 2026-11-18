@@ -1,64 +1,15 @@
-import 'package:bookia_mobile/app/di.dart';
 import 'package:bookia_mobile/app/router.dart';
-import 'package:bookia_mobile/app/theme/app_theme.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
-import 'package:bookia_mobile/core/offers/reservable_offer.dart';
-import 'package:bookia_mobile/core/session/session_providers.dart';
 import 'package:bookia_mobile/core/session/session_status.dart';
-import 'package:bookia_mobile/features/auth/presentation/providers.dart';
-import 'package:bookia_mobile/features/books/domain/entities/book.dart';
-import 'package:bookia_mobile/features/books/presentation/providers.dart';
 import 'package:bookia_mobile/features/reservations/domain/entities/reservation.dart';
-import 'package:bookia_mobile/features/reservations/presentation/providers.dart';
 import 'package:bookia_mobile/features/reservations/presentation/widgets/pickup_code_card.dart';
 import 'package:bookia_mobile/features/reservations/presentation/widgets/quantity_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 
 import '../auth/auth_test_helpers.dart';
 import 'reservation_test_helpers.dart';
-
-Future<(ProviderContainer, GoRouter)> _pump(
-  WidgetTester tester, {
-  String location = '/reserve/b1/o1',
-  Book? book,
-  ReservableOffer? offer,
-  FakeReservationRepository? reservations,
-  SessionStatus session = const GuestSession(),
-  FakeAuthRepository? auth,
-}) async {
-  FlutterSecureStorage.setMockInitialValues({});
-  tester.view.physicalSize = const Size(1080, 2400);
-  tester.view.devicePixelRatio = 1;
-  addTearDown(tester.view.reset);
-  final container = ProviderContainer(
-    overrides: [
-      bookRepositoryProvider.overrideWithValue(FakeBookRepository(book)),
-      reservableOfferSourceProvider.overrideWithValue(
-        FakeReservableOfferSource(offer: offer),
-      ),
-      reservationRepositoryProvider.overrideWithValue(
-        reservations ?? FakeReservationRepository(),
-      ),
-      if (auth != null) authRepositoryProvider.overrideWithValue(auth),
-    ],
-  );
-  addTearDown(container.dispose);
-  container.read(currentSessionProvider.notifier).set(session);
-  final router = createRouter(initialLocation: location);
-  addTearDown(router.dispose);
-  await tester.pumpWidget(
-    UncontrolledProviderScope(
-      container: container,
-      child: MaterialApp.router(theme: AppTheme.light(), routerConfig: router),
-    ),
-  );
-  await tester.pumpAndSettle();
-  return (container, router);
-}
+import 'reserve_page_harness.dart';
 
 const _reader = SignedInSession(name: 'Ana', role: 'reader');
 
@@ -66,7 +17,7 @@ void main() {
   testWidgets('screen 10 shows the offer, quantity and the notes', (
     tester,
   ) async {
-    await _pump(tester, session: _reader);
+    await pumpReserve(tester, session: _reader);
 
     expect(find.text('Reservar'), findsOneWidget);
     expect(find.text('Aura'), findsOneWidget);
@@ -89,7 +40,7 @@ void main() {
   testWidgets('the quantity controls update the total and respect the limits', (
     tester,
   ) async {
-    await _pump(tester, session: _reader);
+    await pumpReserve(tester, session: _reader);
 
     await tester.tap(find.widgetWithIcon(IconButton, Icons.remove));
     await tester.pumpAndSettle();
@@ -114,7 +65,7 @@ void main() {
   testWidgets('the maximum is the stock when it is lower than five', (
     tester,
   ) async {
-    await _pump(tester, offer: testOffer(stock: 2), session: _reader);
+    await pumpReserve(tester, offer: testOffer(stock: 2), session: _reader);
 
     expect(find.text('Máximo 2 por reserva'), findsOneWidget);
     await tester.tap(find.widgetWithIcon(IconButton, Icons.add));
@@ -130,7 +81,7 @@ void main() {
   testWidgets('a guest is sent to login and returns to the same offer', (
     tester,
   ) async {
-    final (_, router) = await _pump(tester);
+    final (_, router) = await pumpReserve(tester);
 
     expect(
       find.text('Inicia sesión para reservar este libro.'),
@@ -151,7 +102,7 @@ void main() {
   testWidgets('store staff get an explanation, not a login loop', (
     tester,
   ) async {
-    await _pump(
+    await pumpReserve(
       tester,
       session: const SignedInSession(name: 'Karol', role: 'store_owner'),
     );
@@ -167,7 +118,7 @@ void main() {
   testWidgets('a sold-out offer hides the selector and cannot be confirmed', (
     tester,
   ) async {
-    await _pump(tester, offer: testOffer(stock: 0), session: _reader);
+    await pumpReserve(tester, offer: testOffer(stock: 0), session: _reader);
 
     expect(find.text('Agotado'), findsOneWidget);
     expect(find.byType(QuantitySelector), findsNothing);
@@ -183,7 +134,7 @@ void main() {
   });
 
   testWidgets('a stock of one keeps the selector available', (tester) async {
-    await _pump(tester, offer: testOffer(stock: 1), session: _reader);
+    await pumpReserve(tester, offer: testOffer(stock: 1), session: _reader);
 
     expect(find.byType(QuantitySelector), findsOneWidget);
     expect(find.text('Máximo 1 por reserva'), findsOneWidget);
@@ -225,7 +176,7 @@ void main() {
           store: store,
         ),
       ];
-      await _pump(tester, reservations: reservations, session: _reader);
+      await pumpReserve(tester, reservations: reservations, session: _reader);
 
       await tester.tap(find.widgetWithIcon(IconButton, Icons.add));
       await tester.pumpAndSettle();
@@ -248,7 +199,7 @@ void main() {
     final reservations = FakeReservationRepository()
       ..onCreate = (_, _) async =>
           throw const ConflictFailure('Ya no hay suficientes ejemplares.');
-    await _pump(tester, reservations: reservations, session: _reader);
+    await pumpReserve(tester, reservations: reservations, session: _reader);
 
     await tester.tap(find.widgetWithText(FilledButton, 'Confirmar reserva'));
     await tester.pumpAndSettle();
@@ -259,7 +210,7 @@ void main() {
   testWidgets('book detail sends a guest to login for that offer', (
     tester,
   ) async {
-    final (_, router) = await _pump(tester, location: '/books/b1');
+    final (_, router) = await pumpReserve(tester, location: '/books/b1');
 
     await tester.tap(find.widgetWithText(TextButton, 'Reservar'));
     await tester.pumpAndSettle();
@@ -275,7 +226,7 @@ void main() {
     tester,
   ) async {
     final auth = FakeAuthRepository();
-    final (_, router) = await _pump(
+    final (_, router) = await pumpReserve(
       tester,
       location: '/auth?next=/reserve/b1/o1',
       auth: auth,

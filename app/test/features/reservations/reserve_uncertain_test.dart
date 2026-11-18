@@ -1,53 +1,14 @@
-import 'package:bookia_mobile/app/di.dart';
-import 'package:bookia_mobile/app/router.dart';
-import 'package:bookia_mobile/app/theme/app_theme.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
-import 'package:bookia_mobile/core/session/session_providers.dart';
 import 'package:bookia_mobile/core/session/session_status.dart';
-import 'package:bookia_mobile/features/books/presentation/providers.dart';
 import 'package:bookia_mobile/features/reservations/domain/entities/reservation.dart';
-import 'package:bookia_mobile/features/reservations/presentation/providers.dart';
 import 'package:bookia_mobile/features/reservations/presentation/widgets/pickup_code_card.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 
 import 'reservation_test_helpers.dart';
+import 'reserve_page_harness.dart';
 
 const _reader = SignedInSession(name: 'Ana', role: 'reader');
-
-Future<(ProviderContainer, GoRouter)> _pump(
-  WidgetTester tester, {
-  required FakeReservationRepository reservations,
-}) async {
-  FlutterSecureStorage.setMockInitialValues({});
-  tester.view.physicalSize = const Size(1080, 2600);
-  tester.view.devicePixelRatio = 1;
-  addTearDown(tester.view.reset);
-  final container = ProviderContainer(
-    overrides: [
-      bookRepositoryProvider.overrideWithValue(FakeBookRepository()),
-      reservableOfferSourceProvider.overrideWithValue(
-        FakeReservableOfferSource(),
-      ),
-      reservationRepositoryProvider.overrideWithValue(reservations),
-    ],
-  );
-  addTearDown(container.dispose);
-  container.read(currentSessionProvider.notifier).set(_reader);
-  final router = createRouter(initialLocation: '/reserve/b1/o1');
-  addTearDown(router.dispose);
-  await tester.pumpWidget(
-    UncontrolledProviderScope(
-      container: container,
-      child: MaterialApp.router(theme: AppTheme.light(), routerConfig: router),
-    ),
-  );
-  await tester.pumpAndSettle();
-  return (container, router);
-}
 
 FakeReservationRepository _uncertainRepository() {
   final repository = FakeReservationRepository();
@@ -65,7 +26,7 @@ void main() {
     tester,
   ) async {
     final reservations = _uncertainRepository();
-    await _pump(tester, reservations: reservations);
+    await pumpReserve(tester, reservations: reservations, session: _reader);
     await _submit(tester);
 
     expect(find.text('Resultado incierto'), findsOneWidget);
@@ -79,7 +40,11 @@ void main() {
     tester,
   ) async {
     final reservations = _uncertainRepository();
-    final (_, router) = await _pump(tester, reservations: reservations);
+    final (_, router) = await pumpReserve(
+      tester,
+      reservations: reservations,
+      session: _reader,
+    );
     await _submit(tester);
     reservations.onList = () async => [
       testReservation(
@@ -118,7 +83,7 @@ void main() {
 
   testWidgets('an old match of the same offer is not offered', (tester) async {
     final reservations = _uncertainRepository();
-    await _pump(tester, reservations: reservations);
+    await pumpReserve(tester, reservations: reservations, session: _reader);
     await _submit(tester);
     reservations.onList = () async => [
       testReservation(
@@ -139,7 +104,7 @@ void main() {
     tester,
   ) async {
     final reservations = _uncertainRepository();
-    await _pump(tester, reservations: reservations);
+    await pumpReserve(tester, reservations: reservations, session: _reader);
     await _submit(tester);
     reservations.onList = () async => [
       testReservation(id: 'r1', createdAt: DateTime.now().toUtc()),
@@ -157,7 +122,7 @@ void main() {
     tester,
   ) async {
     final reservations = _uncertainRepository();
-    await _pump(tester, reservations: reservations);
+    await pumpReserve(tester, reservations: reservations, session: _reader);
     await _submit(tester);
     reservations.onList = () async => <Reservation>[];
 
@@ -172,7 +137,7 @@ void main() {
 
   testWidgets('a failed verification keeps the attempt locked', (tester) async {
     final reservations = _uncertainRepository();
-    await _pump(tester, reservations: reservations);
+    await pumpReserve(tester, reservations: reservations, session: _reader);
     await _submit(tester);
     reservations.onList = () async => throw const ServerFailure();
 
@@ -189,7 +154,7 @@ void main() {
     'discarding the attempt requires confirmation and keeps the notice',
     (tester) async {
       final reservations = _uncertainRepository();
-      await _pump(tester, reservations: reservations);
+      await pumpReserve(tester, reservations: reservations, session: _reader);
       await _submit(tester);
 
       await tester.tap(find.text('Descartar intento'));
@@ -215,7 +180,7 @@ void main() {
     tester,
   ) async {
     final reservations = _uncertainRepository();
-    await _pump(tester, reservations: reservations);
+    await pumpReserve(tester, reservations: reservations, session: _reader);
     await _submit(tester);
 
     await tester.tap(find.widgetWithIcon(IconButton, Icons.add));
