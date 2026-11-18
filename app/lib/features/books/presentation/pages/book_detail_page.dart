@@ -1,10 +1,14 @@
+import 'package:bookia_mobile/app/router.dart';
 import 'package:bookia_mobile/app/theme/app_spacing.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
+import 'package:bookia_mobile/core/session/session_providers.dart';
+import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/features/books/domain/entities/book.dart';
 import 'package:bookia_mobile/features/books/presentation/controllers/book_detail_controller.dart';
 import 'package:bookia_mobile/features/books/presentation/widgets/offer_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 /// Screen 07 Ficha de libro: the book and every store that sells it,
 /// from the cheapest to the most expensive.
@@ -46,13 +50,33 @@ class BookDetailPage extends ConsumerWidget {
   }
 }
 
-class _BookDetail extends StatelessWidget {
+class _BookDetail extends ConsumerWidget {
   const _BookDetail({required this.book});
 
   final Book book;
 
+  /// Screen 10 needs a reader; guests sign in and return to the same offer,
+  /// staff get an explanation instead of a login loop.
+  void _reserve(BuildContext context, WidgetRef ref, BookOffer offer) {
+    final path = AppRoutes.reserve(book.id, offer.id);
+    final session = ref.read(currentSessionProvider);
+    if (session is SignedInSession && session.role != 'reader') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Solo las cuentas de lector pueden reservar.'),
+        ),
+      );
+      return;
+    }
+    if (session is! SignedInSession) {
+      context.go(AppRoutes.signIn(next: path));
+      return;
+    }
+    context.push(path);
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
     final offers = book.offersByPrice;
     final details = [book.publisher, book.genre, book.edition].nonNulls;
@@ -83,6 +107,7 @@ class _BookDetail extends StatelessWidget {
           OfferTile(
             offer: offer,
             isBestPrice: offer.isAvailable && offer.price == minPrice,
+            onReserve: () => _reserve(context, ref, offer),
           ),
       ],
     );
