@@ -1,3 +1,4 @@
+import 'package:bookia_mobile/app/router.dart';
 import 'package:bookia_mobile/app/theme/app_spacing.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
 import 'package:bookia_mobile/core/session/session_providers.dart';
@@ -78,8 +79,12 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   Widget build(BuildContext context) {
     ref.listen(authControllerProvider, (previous, next) {
       if (next.asData?.value != null &&
-          GoRouterState.of(context).uri.path == '/auth') {
-        context.go('/profile');
+          GoRouterState.of(context).uri.path == AppRoutes.auth) {
+        context.go(
+          AppRoutes.afterAuth(
+            GoRouterState.of(context).uri.queryParameters['next'],
+          ),
+        );
       }
     });
     final session = ref.watch(authControllerProvider);

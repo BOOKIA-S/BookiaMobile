@@ -8,12 +8,20 @@ final mxn = NumberFormat.currency(locale: 'es_MX', symbol: r'$');
 
 /// One row of "Dónde comprarlo": store, address, price and copies.
 class OfferTile extends StatelessWidget {
-  const OfferTile({required this.offer, this.isBestPrice = false, super.key});
+  const OfferTile({
+    required this.offer,
+    this.isBestPrice = false,
+    this.onReserve,
+    super.key,
+  });
 
   final BookOffer offer;
 
   /// Cheapest store that has copies.
   final bool isBestPrice;
+
+  /// Screen 10 entry; hidden when the offer is sold out.
+  final VoidCallback? onReserve;
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +53,11 @@ class OfferTile extends StatelessWidget {
               children: [
                 Text(mxn.format(offer.price), style: text.titleMedium),
                 StockLabel(offer: offer),
+                if (offer.isAvailable && onReserve != null)
+                  TextButton(
+                    onPressed: onReserve,
+                    child: const Text('Reservar'),
+                  ),
               ],
             ),
           ],
