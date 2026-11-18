@@ -5,6 +5,8 @@ import 'package:bookia_mobile/features/auth/presentation/pages/auth_page.dart';
 import 'package:bookia_mobile/features/books/presentation/pages/book_detail_page.dart';
 import 'package:bookia_mobile/features/home/presentation/pages/home_page.dart';
 import 'package:bookia_mobile/features/onboarding/presentation/pages/location_permission_page.dart';
+import 'package:bookia_mobile/features/reservations/domain/entities/reservation.dart';
+import 'package:bookia_mobile/features/reservations/presentation/pages/reservation_ready_page.dart';
 import 'package:bookia_mobile/features/reservations/presentation/pages/reserve_page.dart';
 import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
 import 'package:bookia_mobile/features/search/presentation/search_query.dart';
@@ -146,7 +148,12 @@ GoRouter createRouter({
     ),
     GoRoute(
       path: AppRoutes.reservationReadyPattern,
-      builder: (_, _) => const PlaceholderPage(title: 'Reserva lista'),
+      builder: (_, state) => ReservationReadyPage(
+        key: ValueKey(state.uri),
+        reservationId: state.pathParameters['id']!,
+        initial: state.extra is Reservation ? state.extra as Reservation : null,
+        recovered: state.uri.queryParameters['recovered'] == '1',
+      ),
     ),
   ],
 );
