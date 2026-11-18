@@ -1,18 +1,24 @@
 import 'package:bookia_mobile/app/router.dart';
 import 'package:bookia_mobile/app/theme/app_colors.dart';
+import 'package:bookia_mobile/features/onboarding/presentation/providers.dart';
 import 'package:bookia_mobile/features/splash/presentation/controllers/splash_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-/// Screen 01: BOOKIA logo while the stored session is checked, then Inicio.
+/// Screen 01: BOOKIA logo while the stored session is checked, then 02
+/// Permiso de ubicación the first time, or Inicio.
 class SplashPage extends ConsumerWidget {
   const SplashPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(splashControllerProvider, (_, next) {
-      if (!next.isLoading) context.go(AppRoutes.home);
+    ref.listen(splashControllerProvider, (_, next) async {
+      if (next.isLoading) return;
+      final ask = await ref.read(locationPromptNeededProvider.future);
+      if (context.mounted) {
+        context.go(ask ? AppRoutes.locationPermission : AppRoutes.home);
+      }
     });
     ref.watch(splashControllerProvider);
     final text = Theme.of(context).textTheme;

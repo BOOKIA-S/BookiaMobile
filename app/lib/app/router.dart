@@ -3,6 +3,7 @@ import 'package:bookia_mobile/core/widgets/placeholder_page.dart';
 import 'package:bookia_mobile/features/auth/presentation/pages/auth_page.dart';
 import 'package:bookia_mobile/features/books/presentation/pages/book_detail_page.dart';
 import 'package:bookia_mobile/features/home/presentation/pages/home_page.dart';
+import 'package:bookia_mobile/features/onboarding/presentation/pages/location_permission_page.dart';
 import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
 import 'package:bookia_mobile/features/search/presentation/search_query.dart';
 import 'package:bookia_mobile/features/splash/presentation/pages/splash_page.dart';
@@ -11,10 +12,11 @@ import 'package:bookia_mobile/features/stores/presentation/pages/stores_list_pag
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
-/// Route paths. The app starts on 01 Splash; screens 03, 04, 08, 12 and 15
+/// Route paths. The app starts on 01 Splash (then 02 the first time); screens 03, 04, 08, 12 and 15
 /// hang from the bottom bar.
 abstract final class AppRoutes {
   static const splash = '/splash';
+  static const locationPermission = '/onboarding/location';
   static const home = '/home';
   static const search = '/search';
   static const map = '/map';
@@ -58,6 +60,10 @@ GoRouter createRouter({String initialLocation = AppRoutes.home}) => GoRouter(
   initialLocation: initialLocation,
   routes: [
     GoRoute(path: AppRoutes.splash, builder: (_, _) => const SplashPage()),
+    GoRoute(
+      path: AppRoutes.locationPermission,
+      builder: (_, _) => const LocationPermissionPage(),
+    ),
     GoRoute(path: AppRoutes.auth, builder: (_, _) => const AuthPage()),
     GoRoute(path: AppRoutes.stores, builder: (_, _) => const StoresListPage()),
     GoRoute(

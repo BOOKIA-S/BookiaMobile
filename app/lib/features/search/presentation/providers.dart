@@ -28,7 +28,7 @@ final canSortByDistanceProvider = Provider.autoDispose<bool>(
 );
 
 /// Kilometres from the user to each store, from `/stores/near`. Empty when
-/// the position is unknown (screen 02 declined or LocationService pending).
+/// the position is unknown (screen 02 declined or no GPS).
 final storeDistancesProvider = FutureProvider.autoDispose<Map<String, double>>((
   ref,
 ) async {
