@@ -3,6 +3,8 @@ import 'package:bookia_mobile/core/widgets/placeholder_page.dart';
 import 'package:bookia_mobile/features/auth/presentation/pages/auth_page.dart';
 import 'package:bookia_mobile/features/books/presentation/pages/book_detail_page.dart';
 import 'package:bookia_mobile/features/home/presentation/pages/home_page.dart';
+import 'package:bookia_mobile/features/reservations/domain/entities/reservation.dart';
+import 'package:bookia_mobile/features/reservations/presentation/pages/reservation_ready_page.dart';
 import 'package:bookia_mobile/features/reservations/presentation/pages/reserve_page.dart';
 import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
 import 'package:bookia_mobile/features/search/presentation/search_query.dart';
@@ -37,6 +39,11 @@ abstract final class AppRoutes {
 
   static const reservePattern = '/reserve/:bookId/:offerId';
 
+  /// Screen 11 for an existing reservation of the signed-in reader.
+  static String reservationReady(String id) => '/reservation/$id';
+
+  static const reservationReadyPattern = '/reservation/:id';
+
   /// Login URL that returns to [next] (or to Perfil when it is null).
   static String signIn({String? next}) => Uri(
     path: auth,
@@ -46,9 +53,11 @@ abstract final class AppRoutes {
   /// After signing in, only an internal reserve continuation is honored, so
   /// no arbitrary destination can be injected through the URL.
   static String afterAuth(String? next) =>
-      next != null && next.startsWith('/reserve/') && !next.contains('://')
-      ? next
-      : profile;
+      next != null && _isContinuation(next) ? next : profile;
+
+  static bool _isContinuation(String next) =>
+      (next.startsWith('/reserve/') || next.startsWith('/reservation/')) &&
+      !next.contains('://');
 }
 
 StatefulShellBranch _tab(
@@ -108,6 +117,14 @@ GoRouter createRouter({String initialLocation = AppRoutes.home}) => GoRouter(
         key: ValueKey(state.uri),
         bookId: state.pathParameters['bookId']!,
         offerId: state.pathParameters['offerId']!,
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.reservationReadyPattern,
+      builder: (_, state) => ReservationReadyPage(
+        key: ValueKey(state.uri),
+        reservationId: state.pathParameters['id']!,
+        initial: state.extra is Reservation ? state.extra as Reservation : null,
       ),
     ),
   ],

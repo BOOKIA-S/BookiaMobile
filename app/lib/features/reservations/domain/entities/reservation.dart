@@ -41,6 +41,13 @@ class Reservation {
 
   /// Amount to pay in the store, with the price confirmed by the server.
   double get total => price * quantity;
+
+  /// Short pickup code of SPECS.md: `BK-` + the last four characters of the
+  /// id. It is only for reading aloud; the QR and the API use [id].
+  String get shortCode {
+    final tail = id.length <= 4 ? id : id.substring(id.length - 4);
+    return 'BK-${tail.toUpperCase()}';
+  }
 }
 
 /// `book` object of a populated reservation.

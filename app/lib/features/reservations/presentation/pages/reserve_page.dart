@@ -7,7 +7,6 @@ import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/features/reservations/presentation/controllers/reserve_controller.dart';
 import 'package:bookia_mobile/features/reservations/presentation/formatters.dart';
 import 'package:bookia_mobile/features/reservations/presentation/widgets/quantity_selector.dart';
-import 'package:bookia_mobile/features/reservations/presentation/widgets/reserve_success.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,6 +23,17 @@ class ReservePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final key = (bookId: bookId, offerId: offerId);
     final provider = reserveControllerProvider(key);
+    ref.listen(provider, (previous, next) {
+      final created = next.value?.created;
+      if (created != null && previous?.value?.created == null) {
+        // pushReplacement: returning from screen 11 must not reach the form
+        // with a reservation that already exists.
+        context.pushReplacement(
+          AppRoutes.reservationReady(created.id),
+          extra: created,
+        );
+      }
+    });
     return Scaffold(
       appBar: AppBar(title: const Text('Reservar')),
       body: ref
@@ -38,10 +48,7 @@ class ReservePage extends ConsumerWidget {
             ),
             data: (state) => state.created == null
                 ? _ReserveForm(reserveKey: key, state: state)
-                : ReserveSuccess(
-                    reservation: state.created!,
-                    bookTitle: state.book.title,
-                  ),
+                : const Center(child: CircularProgressIndicator()),
           ),
     );
   }

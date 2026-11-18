@@ -6,7 +6,9 @@ import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/features/auth/presentation/providers.dart';
 import 'package:bookia_mobile/features/books/domain/entities/book.dart';
 import 'package:bookia_mobile/features/books/presentation/providers.dart';
+import 'package:bookia_mobile/features/reservations/domain/entities/reservation.dart';
 import 'package:bookia_mobile/features/reservations/presentation/providers.dart';
+import 'package:bookia_mobile/features/reservations/presentation/widgets/pickup_code_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -169,23 +171,54 @@ void main() {
     );
   });
 
-  testWidgets('a successful reservation shows the values sent by the server', (
-    tester,
-  ) async {
-    final reservations = FakeReservationRepository()
-      ..onCreate = (_, quantity) async =>
-          testReservation(price: 99, quantity: quantity);
-    await _pump(tester, reservations: reservations, session: _reader);
+  testWidgets(
+    'a successful reservation opens screen 11 without posting again',
+    (tester) async {
+      const book = ReservationBook(
+        id: 'b1',
+        title: 'Aura',
+        author: 'Carlos Fuentes',
+      );
+      const store = ReservationStore(
+        id: 's1',
+        name: 'Librería del Centro',
+        address: 'Calle Juárez 10',
+      );
+      final reservations = FakeReservationRepository();
+      reservations.onCreate = (_, quantity) async => testReservation(
+        id: 'abc4f7q',
+        price: 99,
+        quantity: quantity,
+        book: book,
+        store: store,
+      );
+      reservations.onList = () async => [
+        testReservation(
+          id: 'abc4f7q',
+          price: 99,
+          quantity: 2,
+          book: book,
+          store: store,
+        ),
+      ];
+      await _pump(tester, reservations: reservations, session: _reader);
 
-    await tester.tap(find.widgetWithIcon(IconButton, Icons.add));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirmar reserva'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithIcon(IconButton, Icons.add));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Confirmar reserva'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Reserva creada'), findsOneWidget);
-    expect(find.text(r'$198.00'), findsOneWidget);
-    expect(reservations.lastQuantity, 2);
-  });
+      expect(find.widgetWithText(AppBar, 'Reserva lista'), findsOneWidget);
+      expect(find.text('¡Libro apartado!'), findsOneWidget);
+      expect(find.text('BK-4F7Q'), findsOneWidget);
+      expect(tester.widget<PickupQr>(find.byType(PickupQr)).data, 'abc4f7q');
+      expect(find.text(r'$198.00'), findsOneWidget);
+      expect(reservations.lastQuantity, 2);
+      expect(reservations.createCalls, 1);
+      await tester.pumpAndSettle();
+      expect(reservations.createCalls, 1);
+    },
+  );
 
   testWidgets('a 409 shows the insufficient-copies message', (tester) async {
     final reservations = FakeReservationRepository()
@@ -249,5 +282,6 @@ void main() {
     );
     expect(AppRoutes.afterAuth('//evil.test/reserve'), AppRoutes.profile);
     expect(AppRoutes.afterAuth('/reserve/b1/o1'), '/reserve/b1/o1');
+    expect(AppRoutes.afterAuth('/reservation/abc'), '/reservation/abc');
   });
 }
