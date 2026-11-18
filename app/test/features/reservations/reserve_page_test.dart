@@ -1,6 +1,8 @@
+import 'package:bookia_mobile/app/di.dart';
 import 'package:bookia_mobile/app/router.dart';
 import 'package:bookia_mobile/app/theme/app_theme.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
+import 'package:bookia_mobile/core/offers/reservable_offer.dart';
 import 'package:bookia_mobile/core/session/session_providers.dart';
 import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/features/auth/presentation/providers.dart';
@@ -9,6 +11,7 @@ import 'package:bookia_mobile/features/books/presentation/providers.dart';
 import 'package:bookia_mobile/features/reservations/domain/entities/reservation.dart';
 import 'package:bookia_mobile/features/reservations/presentation/providers.dart';
 import 'package:bookia_mobile/features/reservations/presentation/widgets/pickup_code_card.dart';
+import 'package:bookia_mobile/features/reservations/presentation/widgets/quantity_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -22,6 +25,7 @@ Future<(ProviderContainer, GoRouter)> _pump(
   WidgetTester tester, {
   String location = '/reserve/b1/o1',
   Book? book,
+  ReservableOffer? offer,
   FakeReservationRepository? reservations,
   SessionStatus session = const GuestSession(),
   FakeAuthRepository? auth,
@@ -33,6 +37,9 @@ Future<(ProviderContainer, GoRouter)> _pump(
   final container = ProviderContainer(
     overrides: [
       bookRepositoryProvider.overrideWithValue(FakeBookRepository(book)),
+      reservableOfferSourceProvider.overrideWithValue(
+        FakeReservableOfferSource(offer: offer),
+      ),
       reservationRepositoryProvider.overrideWithValue(
         reservations ?? FakeReservationRepository(),
       ),
@@ -107,7 +114,7 @@ void main() {
   testWidgets('the maximum is the stock when it is lower than five', (
     tester,
   ) async {
-    await _pump(tester, book: testBook(stock: 2), session: _reader);
+    await _pump(tester, offer: testOffer(stock: 2), session: _reader);
 
     expect(find.text('Máximo 2 por reserva'), findsOneWidget);
     await tester.tap(find.widgetWithIcon(IconButton, Icons.add));
@@ -157,15 +164,32 @@ void main() {
     expect(find.text('Iniciar sesión para reservar'), findsNothing);
   });
 
-  testWidgets('a sold-out offer cannot be confirmed', (tester) async {
-    await _pump(tester, book: testBook(stock: 0), session: _reader);
+  testWidgets('a sold-out offer hides the selector and cannot be confirmed', (
+    tester,
+  ) async {
+    await _pump(tester, offer: testOffer(stock: 0), session: _reader);
 
     expect(find.text('Agotado'), findsOneWidget);
+    expect(find.byType(QuantitySelector), findsNothing);
+    expect(find.text('Máximo 0 por reserva'), findsNothing);
     expect(
       tester
           .widget<FilledButton>(
             find.widgetWithText(FilledButton, 'Confirmar reserva'),
           )
+          .onPressed,
+      isNull,
+    );
+  });
+
+  testWidgets('a stock of one keeps the selector available', (tester) async {
+    await _pump(tester, offer: testOffer(stock: 1), session: _reader);
+
+    expect(find.byType(QuantitySelector), findsOneWidget);
+    expect(find.text('Máximo 1 por reserva'), findsOneWidget);
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.add))
           .onPressed,
       isNull,
     );

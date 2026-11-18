@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:bookia_mobile/app/di.dart';
 import 'package:bookia_mobile/app/router.dart';
 import 'package:bookia_mobile/app/theme/app_theme.dart';
 import 'package:bookia_mobile/core/di/providers.dart';
@@ -10,7 +11,6 @@ import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/core/storage/token_storage.dart';
 import 'package:bookia_mobile/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:bookia_mobile/features/auth/presentation/providers.dart';
-import 'package:bookia_mobile/features/books/presentation/providers.dart';
 import 'package:bookia_mobile/features/reservations/domain/entities/reservation.dart';
 import 'package:bookia_mobile/features/reservations/presentation/providers.dart';
 import 'package:dio/dio.dart';
@@ -120,10 +120,15 @@ void main() {
     tester,
   ) async {
     FlutterSecureStorage.setMockInitialValues({});
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final adapter = _UnauthorizedAdapter();
     final container = ProviderContainer(
       overrides: [
-        bookRepositoryProvider.overrideWithValue(FakeBookRepository()),
+        reservableOfferSourceProvider.overrideWithValue(
+          FakeReservableOfferSource(),
+        ),
         apiBaseUrlProvider.overrideWithValue('https://bookia.test/api'),
         dioProvider.overrideWithValue(Dio()..httpClientAdapter = adapter),
       ],
@@ -163,6 +168,9 @@ void main() {
     tester,
   ) async {
     FlutterSecureStorage.setMockInitialValues({});
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final pending = Completer<Reservation>();
     final reservations = FakeReservationRepository();
     reservations.onCreate = (_, _) => pending.future;
@@ -171,7 +179,9 @@ void main() {
     addTearDown(tester.view.reset);
     final container = ProviderContainer(
       overrides: [
-        bookRepositoryProvider.overrideWithValue(FakeBookRepository()),
+        reservableOfferSourceProvider.overrideWithValue(
+          FakeReservableOfferSource(),
+        ),
         reservationRepositoryProvider.overrideWithValue(reservations),
       ],
     );

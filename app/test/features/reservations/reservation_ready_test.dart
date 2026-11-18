@@ -57,6 +57,7 @@ Future<ProviderContainer> _pumpPage(
   WidgetTester tester, {
   String id = 'abc4f7q',
   Reservation? initial,
+  bool recovered = false,
   FakeReservationRepository? reservations,
   FakeLauncher? launcher,
 }) async {
@@ -78,7 +79,11 @@ Future<ProviderContainer> _pumpPage(
       container: container,
       child: MaterialApp(
         theme: AppTheme.light(),
-        home: ReservationReadyPage(reservationId: id, initial: initial),
+        home: ReservationReadyPage(
+          reservationId: id,
+          initial: initial,
+          recovered: recovered,
+        ),
       ),
     ),
   );
@@ -140,6 +145,17 @@ void main() {
     expect(find.textContaining('Vence el '), findsOneWidget);
     expect(find.text('Cómo llegar'), findsOneWidget);
     expect(reservations.listCalls, 1);
+  });
+
+  testWidgets('a recovered reservation is not described as newly created', (
+    tester,
+  ) async {
+    final reservations = FakeReservationRepository()
+      ..onList = () async => [_reservation()];
+    await _pumpPage(tester, reservations: reservations, recovered: true);
+
+    expect(find.text('Reserva encontrada'), findsOneWidget);
+    expect(find.text('¡Libro apartado!'), findsNothing);
   });
 
   testWidgets('a complete result from screen 10 needs no extra request', (

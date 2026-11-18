@@ -1,4 +1,5 @@
 import 'package:bookia_mobile/app/app_shell.dart';
+import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/core/widgets/placeholder_page.dart';
 import 'package:bookia_mobile/features/auth/presentation/pages/auth_page.dart';
 import 'package:bookia_mobile/features/books/presentation/pages/book_detail_page.dart';
@@ -58,6 +59,9 @@ abstract final class AppRoutes {
   static bool _isContinuation(String next) =>
       (next.startsWith('/reserve/') || next.startsWith('/reservation/')) &&
       !next.contains('://');
+
+  static bool _needsReader(String path) =>
+      path.startsWith('/reserve/') || path.startsWith('/reservation/');
 }
 
 StatefulShellBranch _tab(
@@ -83,8 +87,25 @@ Widget _results(GoRouterState state) => SearchResultsPage(
 );
 
 /// Builds the app router. A new instance per call keeps tests isolated.
-GoRouter createRouter({String initialLocation = AppRoutes.home}) => GoRouter(
+///
+/// [session] and [refreshListenable] enable the reader guard of screens 10/11;
+/// without them (unit tests) the routes behave as before. A cold deep link
+/// into a protected route is redirected before the splash can restore a
+/// stored token; the app normally starts on `/splash`.
+GoRouter createRouter({
+  String initialLocation = AppRoutes.home,
+  SessionStatus Function()? session,
+  Listenable? refreshListenable,
+}) => GoRouter(
   initialLocation: initialLocation,
+  refreshListenable: refreshListenable,
+  redirect: session == null
+      ? null
+      : (_, state) {
+          if (!AppRoutes._needsReader(state.uri.path)) return null;
+          if (session() is SignedInSession) return null;
+          return AppRoutes.signIn(next: state.uri.toString());
+        },
   routes: [
     GoRoute(path: AppRoutes.splash, builder: (_, _) => const SplashPage()),
     GoRoute(path: AppRoutes.auth, builder: (_, _) => const AuthPage()),
@@ -125,6 +146,7 @@ GoRouter createRouter({String initialLocation = AppRoutes.home}) => GoRouter(
         key: ValueKey(state.uri),
         reservationId: state.pathParameters['id']!,
         initial: state.extra is Reservation ? state.extra as Reservation : null,
+        recovered: state.uri.queryParameters['recovered'] == '1',
       ),
     ),
   ],

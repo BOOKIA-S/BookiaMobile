@@ -25,7 +25,7 @@ class ReservationDto {
     final storeId = _idOf(json['store_id']);
     final bookId = _idOf(json['book_id']);
     final price = (json['price'] as num?)?.toDouble();
-    final quantity = (json['quantity'] as num?)?.toInt();
+    final quantity = _quantity(json['quantity']);
     final status = json['status'];
     final expiresAt = DateTime.tryParse('${json['expires_at']}');
     if (id == null ||
@@ -33,9 +33,9 @@ class ReservationDto {
         storeId == null ||
         bookId == null ||
         price == null ||
+        !price.isFinite ||
         price < 0 ||
         quantity == null ||
-        quantity < 1 ||
         status is! String ||
         status.isEmpty ||
         expiresAt == null) {
@@ -79,6 +79,15 @@ class ReservationDto {
       (map['_id'] as String).isEmpty ? null : map['_id'] as String,
     _ => null,
   };
+
+  /// Only finite integers from 1 to 5 are accepted; 1.5 is a contract error,
+  /// not a silent 1.
+  static int? _quantity(Object? value) {
+    if (value is! num || !value.isFinite) return null;
+    if (value != value.roundToDouble()) return null;
+    final quantity = value.toInt();
+    return quantity >= 1 && quantity <= 5 ? quantity : null;
+  }
 
   static DateTime? _dateOrNull(Object? value) =>
       value is String ? DateTime.tryParse(value) : null;

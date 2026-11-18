@@ -1,10 +1,24 @@
+import 'package:bookia_mobile/core/offers/reservable_offer.dart';
 import 'package:bookia_mobile/features/books/domain/entities/book.dart';
 import 'package:bookia_mobile/features/books/domain/repositories/book_repository.dart';
 import 'package:bookia_mobile/features/reservations/domain/entities/reservation.dart';
 import 'package:bookia_mobile/features/reservations/domain/entities/reservation_status.dart';
 import 'package:bookia_mobile/features/reservations/domain/repositories/reservation_repository.dart';
 
-/// Book with one offer of [stock] copies at [price] (screen 07/10).
+/// Offer returned by the shared contract for screen 10.
+ReservableOffer testOffer({int stock = 6, double price = 129}) =>
+    ReservableOffer(
+      bookId: 'b1',
+      bookTitle: 'Aura',
+      bookAuthor: 'Carlos Fuentes',
+      offerId: 'o1',
+      storeName: 'Librería del Centro',
+      storeAddress: 'Calle Juárez 10',
+      price: price,
+      stock: stock,
+    );
+
+/// Book with one offer of [stock] copies at [price] (screen 07).
 Book testBook({int stock = 6, double price = 129}) => Book(
   id: 'b1',
   title: 'Aura',
@@ -29,6 +43,8 @@ Reservation testReservation({
   double price = 129,
   int quantity = 1,
   ReservationStatus status = const Pending(),
+  DateTime? createdAt,
+  DateTime? expiresAt,
   ReservationBook? book,
   ReservationStore? store,
 }) => Reservation(
@@ -40,11 +56,29 @@ Reservation testReservation({
   price: price,
   quantity: quantity,
   status: status,
-  expiresAt: DateTime.utc(2026, 11, 19, 20),
-  createdAt: DateTime.utc(2026, 11, 17, 20),
+  expiresAt: expiresAt ?? DateTime.utc(2026, 11, 19, 20),
+  createdAt: createdAt ?? DateTime.utc(2026, 11, 17, 20),
   book: book,
   store: store,
 );
+
+class FakeReservableOfferSource implements ReservableOfferSource {
+  FakeReservableOfferSource({ReservableOffer? offer, this.missing = false})
+    : offer = offer ?? testOffer();
+
+  final ReservableOffer offer;
+  final bool missing;
+  int calls = 0;
+
+  @override
+  Future<ReservableOffer?> find({
+    required String bookId,
+    required String offerId,
+  }) async {
+    calls++;
+    return missing ? null : offer;
+  }
+}
 
 class FakeBookRepository implements BookRepository {
   FakeBookRepository([Book? book]) : book = book ?? testBook();

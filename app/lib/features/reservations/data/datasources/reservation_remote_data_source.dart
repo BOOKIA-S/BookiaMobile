@@ -20,6 +20,13 @@ class ReservationRemoteDataSource {
     if (items is! List) {
       throw const FormatException('Invalid reservations response');
     }
-    return items.whereType<Map<String, dynamic>>().toList();
+    final reservations = <Map<String, dynamic>>[];
+    for (final item in items) {
+      if (item is! Map<String, dynamic>) {
+        throw const FormatException('Invalid reservation item');
+      }
+      reservations.add(item);
+    }
+    return reservations;
   }
 }

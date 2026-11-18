@@ -1,5 +1,6 @@
 import 'package:bookia_mobile/core/error/failure.dart';
 import 'package:bookia_mobile/features/reservations/data/datasources/reservation_remote_data_source.dart';
+import 'package:bookia_mobile/features/reservations/data/dto/reservation_dto.dart';
 import 'package:bookia_mobile/features/reservations/data/repositories/reservation_repository_impl.dart';
 import 'package:bookia_mobile/features/reservations/domain/entities/reservation_status.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -134,6 +135,12 @@ void main() {
       missingId,
       {..._created(), 'price': 'free'},
       {..._created(), 'quantity': 0},
+      {..._created(), 'quantity': 1.5},
+      {..._created(), 'quantity': 2.7},
+      {..._created(), 'quantity': '2'},
+      {..._created(), 'quantity': 6},
+      {..._created(), 'quantity': -1},
+      {..._created(), 'quantity': null},
       {..._created(), 'status': 7},
       {..._created(), 'expires_at': 'not-a-date'},
       missingOffer,
@@ -166,6 +173,53 @@ void main() {
       _repository(FakeHttpAdapter(200, {'items': 'none'})).listMine(),
       throwsA(isA<ServerFailure>()),
     );
+  });
+
+  test('non-finite or fractional quantities and prices are rejected', () {
+    for (final body in <Map<String, dynamic>>[
+      {..._created(), 'quantity': double.nan},
+      {..._created(), 'quantity': double.infinity},
+      {..._created(), 'price': double.nan},
+    ]) {
+      expect(
+        () => ReservationDto.fromJson(body),
+        throwsA(isA<FormatException>()),
+        reason: '$body',
+      );
+    }
+  });
+
+  test('every item of /mine must be a map', () async {
+    for (final item in <Object?>[
+      null,
+      'text',
+      42,
+      {'not': 'a reservation'},
+    ]) {
+      await expectLater(
+        _repository(
+          FakeHttpAdapter(200, {
+            'items': [item],
+          }),
+        ).listMine(),
+        throwsA(isA<ServerFailure>()),
+        reason: '$item',
+      );
+    }
+    await expectLater(
+      _repository(
+        FakeHttpAdapter(200, {
+          'items': [_created(), null],
+        }),
+      ).listMine(),
+      throwsA(isA<ServerFailure>()),
+    );
+    final valid = await _repository(
+      FakeHttpAdapter(200, {
+        'items': [_created()],
+      }),
+    ).listMine();
+    expect(valid, hasLength(1));
   });
 
   test('the five API statuses map, and unknown ones are kept', () async {

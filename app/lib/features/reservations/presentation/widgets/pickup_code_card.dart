@@ -7,9 +7,16 @@ import 'package:qr_flutter/qr_flutter.dart';
 /// Short code and QR of the reservation. The QR carries exactly the full `_id`
 /// that the store will scan; an inactive reservation never shows one.
 class PickupCodeCard extends StatelessWidget {
-  const PickupCodeCard({required this.reservation, super.key});
+  const PickupCodeCard({
+    required this.reservation,
+    this.recovered = false,
+    super.key,
+  });
 
   final Reservation reservation;
+
+  /// Opened from a possible match, not from the POST response.
+  final bool recovered;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +29,9 @@ class PickupCodeCard extends StatelessWidget {
           children: [
             Text(
               active
-                  ? '¡Libro apartado!'
+                  ? recovered
+                        ? 'Reserva encontrada'
+                        : '¡Libro apartado!'
                   : 'Reserva ${reservation.status.label.toLowerCase()}',
               style: text.headlineSmall,
               textAlign: TextAlign.center,

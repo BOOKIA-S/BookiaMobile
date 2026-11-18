@@ -19,17 +19,22 @@ class ReservationReadyPage extends ConsumerWidget {
   const ReservationReadyPage({
     required this.reservationId,
     this.initial,
+    this.recovered = false,
     super.key,
   });
 
   final String reservationId;
   final Reservation? initial;
 
+  /// True when opened from a possible match of an uncertain attempt; the
+  /// screen must not describe it as newly created.
+  final bool recovered;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final fresh = initial;
     if (fresh != null && fresh.book != null && fresh.store != null) {
-      return _ReadyScaffold(reservation: fresh);
+      return _ReadyScaffold(reservation: fresh, recovered: recovered);
     }
     final provider = reservationReadyProvider(reservationId);
     return Scaffold(
@@ -43,28 +48,31 @@ class ReservationReadyPage extends ConsumerWidget {
               reservationId: reservationId,
               onRetry: () => ref.invalidate(provider),
             ),
-            data: (reservation) => _ReadyBody(reservation: reservation),
+            data: (reservation) =>
+                _ReadyBody(reservation: reservation, recovered: recovered),
           ),
     );
   }
 }
 
 class _ReadyScaffold extends StatelessWidget {
-  const _ReadyScaffold({required this.reservation});
+  const _ReadyScaffold({required this.reservation, required this.recovered});
 
   final Reservation reservation;
+  final bool recovered;
 
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Reserva lista')),
-    body: _ReadyBody(reservation: reservation),
+    body: _ReadyBody(reservation: reservation, recovered: recovered),
   );
 }
 
 class _ReadyBody extends ConsumerWidget {
-  const _ReadyBody({required this.reservation});
+  const _ReadyBody({required this.reservation, required this.recovered});
 
   final Reservation reservation;
+  final bool recovered;
 
   Future<void> _directions(BuildContext context, WidgetRef ref) async {
     final address = reservation.store?.address;
@@ -94,7 +102,7 @@ class _ReadyBody extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        PickupCodeCard(reservation: reservation),
+        PickupCodeCard(reservation: reservation, recovered: recovered),
         ReservationDetailsCard(
           reservation: reservation,
           onDirections: reservation.store?.address == null
