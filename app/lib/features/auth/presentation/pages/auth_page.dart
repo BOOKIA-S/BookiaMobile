@@ -80,10 +80,13 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     ref.listen(authControllerProvider, (previous, next) {
       if (next.asData?.value != null &&
           GoRouterState.of(context).uri.path == AppRoutes.auth) {
+        final role = next.asData!.value!.user.role;
         context.go(
-          AppRoutes.afterAuth(
-            GoRouterState.of(context).uri.queryParameters['next'],
-          ),
+          AppRoutes.isStaffRole(role)
+              ? AppRoutes.staff
+              : AppRoutes.afterAuth(
+                  GoRouterState.of(context).uri.queryParameters['next'],
+                ),
         );
       }
     });

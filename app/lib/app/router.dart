@@ -11,6 +11,7 @@ import 'package:bookia_mobile/features/reservations/presentation/pages/reserve_p
 import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
 import 'package:bookia_mobile/features/search/presentation/search_query.dart';
 import 'package:bookia_mobile/features/splash/presentation/pages/splash_page.dart';
+import 'package:bookia_mobile/features/staff/presentation/pages/staff_panel_page.dart';
 import 'package:bookia_mobile/features/stores/presentation/pages/store_detail_page.dart';
 import 'package:bookia_mobile/features/stores/presentation/pages/stores_list_page.dart';
 import 'package:bookia_mobile/features/stores/presentation/pages/stores_map_page.dart';
@@ -28,6 +29,7 @@ abstract final class AppRoutes {
   static const reservations = '/reservations';
   static const profile = '/profile';
   static const auth = '/auth';
+  static const staff = '/staff';
   static const stores = '/stores';
   static const storeDetail = '/stores/:id';
 
@@ -62,6 +64,10 @@ abstract final class AppRoutes {
   static bool _isContinuation(String next) =>
       (next.startsWith('/reserve/') || next.startsWith('/reservation/')) &&
       !next.contains('://');
+
+  /// Accounts that may open screen 16.
+  static bool isStaffRole(String role) =>
+      role == 'store_owner' || role == 'admin';
 
   static bool _needsReader(String path) =>
       path.startsWith('/reserve/') || path.startsWith('/reservation/');
@@ -105,6 +111,11 @@ GoRouter createRouter({
   redirect: session == null
       ? null
       : (_, state) {
+          if (state.uri.path == AppRoutes.staff) {
+            final current = session();
+            if (current is! SignedInSession) return AppRoutes.signIn();
+            return AppRoutes.isStaffRole(current.role) ? null : AppRoutes.home;
+          }
           if (!AppRoutes._needsReader(state.uri.path)) return null;
           if (session() is SignedInSession) return null;
           return AppRoutes.signIn(next: state.uri.toString());
@@ -116,6 +127,7 @@ GoRouter createRouter({
       builder: (_, _) => const LocationPermissionPage(),
     ),
     GoRoute(path: AppRoutes.auth, builder: (_, _) => const AuthPage()),
+    GoRoute(path: AppRoutes.staff, builder: (_, _) => const StaffPanelPage()),
     GoRoute(path: AppRoutes.stores, builder: (_, _) => const StoresListPage()),
     GoRoute(
       path: AppRoutes.storeDetail,
