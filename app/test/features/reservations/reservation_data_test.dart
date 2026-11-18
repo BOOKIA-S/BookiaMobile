@@ -146,6 +146,21 @@ void main() {
     }
   });
 
+  test('ids are also accepted as { _id } references', () async {
+    final reservation = await _repository(
+      FakeHttpAdapter(201, {
+        ..._created(),
+        'offer_id': {'_id': 'o1'},
+        'store_id': {'_id': 's1'},
+        'book_id': {'_id': 'b1'},
+      }),
+    ).create(offerId: 'o1', quantity: 1);
+
+    expect(reservation.offerId, 'o1');
+    expect(reservation.storeId, 's1');
+    expect(reservation.bookId, 'b1');
+  });
+
   test('GET /reservations/mine rejects a body without items', () async {
     await expectLater(
       _repository(FakeHttpAdapter(200, {'items': 'none'})).listMine(),

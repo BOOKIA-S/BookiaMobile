@@ -93,12 +93,13 @@ void main() {
   });
 
   test('statuses expose the actions allowed by PAT-10', () {
-    for (final status in <ReservationStatus>[
-      const Pending(),
-      const Confirmed(),
+    for (final (status, label) in <(ReservationStatus, String)>[
+      (const Pending(), 'Pendiente'),
+      (const Confirmed(), 'Confirmada'),
     ]) {
       expect(status.isActive, isTrue);
       expect(status.canCancel, isTrue);
+      expect(status.label, label);
     }
     for (final (status, label) in <(ReservationStatus, String)>[
       (const Delivered(), 'Entregada'),
