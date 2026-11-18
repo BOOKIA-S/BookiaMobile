@@ -4,6 +4,8 @@ import 'package:bookia_mobile/features/home/domain/repositories/home_repository.
 import 'package:bookia_mobile/features/home/presentation/providers.dart';
 import 'package:bookia_mobile/features/onboarding/domain/repositories/onboarding_repository.dart';
 import 'package:bookia_mobile/features/onboarding/presentation/providers.dart';
+import 'package:bookia_mobile/features/reservations/domain/repositories/reservation_repository.dart';
+import 'package:bookia_mobile/features/reservations/presentation/providers.dart';
 import 'package:bookia_mobile/features/search/domain/entities/book_summary.dart';
 import 'package:bookia_mobile/features/search/domain/entities/search_filters.dart';
 import 'package:bookia_mobile/features/search/domain/repositories/search_repository.dart';
@@ -22,6 +24,8 @@ class MockLocationService extends Mock implements LocationService {}
 class MockStoreRepository extends Mock implements StoreRepository {}
 
 class MockOnboardingRepository extends Mock implements OnboardingRepository {}
+
+class MockReservationRepository extends Mock implements ReservationRepository {}
 
 /// Location already answered and denied: the splash goes straight to Inicio.
 List<Override> locationOverrides({
@@ -73,10 +77,13 @@ List<Override> offlineOverrides({
       lng: any(named: 'lng'),
     ),
   ).thenAnswer((_) async => const []);
+  final reservations = MockReservationRepository();
+  when(reservations.listMine).thenAnswer((_) async => const []);
   return [
     homeRepositoryProvider.overrideWithValue(home),
     searchRepositoryProvider.overrideWithValue(search),
     storeRepositoryProvider.overrideWithValue(stores),
+    reservationRepositoryProvider.overrideWithValue(reservations),
     if (location) ...locationOverrides(),
   ];
 }

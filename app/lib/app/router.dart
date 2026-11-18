@@ -6,6 +6,7 @@ import 'package:bookia_mobile/features/books/presentation/pages/book_detail_page
 import 'package:bookia_mobile/features/home/presentation/pages/home_page.dart';
 import 'package:bookia_mobile/features/onboarding/presentation/pages/location_permission_page.dart';
 import 'package:bookia_mobile/features/reservations/domain/entities/reservation.dart';
+import 'package:bookia_mobile/features/reservations/presentation/pages/my_reservations_page.dart';
 import 'package:bookia_mobile/features/reservations/presentation/pages/reservation_ready_page.dart';
 import 'package:bookia_mobile/features/reservations/presentation/pages/reserve_page.dart';
 import 'package:bookia_mobile/features/search/presentation/pages/search_results_page.dart';
@@ -142,7 +143,11 @@ GoRouter createRouter({
         _tab(AppRoutes.home, 'Inicio', (_) => const HomePage()),
         _tab(AppRoutes.search, 'Buscar', _results),
         _tab(AppRoutes.map, 'Mapa', (_) => const StoresMapPage()),
-        _tab(AppRoutes.reservations, 'Mis reservas'),
+        _tab(
+          AppRoutes.reservations,
+          'Mis reservas',
+          (_) => const MyReservationsPage(),
+        ),
         _tab(AppRoutes.profile, 'Perfil'),
       ],
     ),
