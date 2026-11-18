@@ -25,9 +25,14 @@ class HomePage extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           TextField(
             textInputAction: TextInputAction.search,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Título, autor o ISBN',
-              prefixIcon: Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.qr_code_scanner),
+                tooltip: 'Escanear ISBN',
+                onPressed: () => context.push<void>(AppRoutes.scan),
+              ),
             ),
             onSubmitted: (q) {
               if (q.trim().isNotEmpty) _search(context, {'q': q.trim()});
