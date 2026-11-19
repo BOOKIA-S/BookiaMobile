@@ -133,7 +133,7 @@ jobs:
           echo "Imagen: \`$name:$TAG\`" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Build and push the API image (DOC-06)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: BookiaMobile/docker/api
           build-contexts: api_src=BookiaAPI
