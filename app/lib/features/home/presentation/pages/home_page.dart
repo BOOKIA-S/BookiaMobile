@@ -1,13 +1,15 @@
 import 'package:bookia_mobile/app/router.dart';
 import 'package:bookia_mobile/app/theme/app_spacing.dart';
 import 'package:bookia_mobile/features/home/presentation/widgets/genre_chips.dart';
+import 'package:bookia_mobile/features/home/presentation/widgets/most_searched_carousel.dart';
+import 'package:bookia_mobile/features/home/presentation/widgets/nearby_stores_section.dart';
 import 'package:bookia_mobile/features/search/presentation/search_query.dart';
 import 'package:bookia_mobile/features/search/presentation/widgets/recent_searches_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-/// Screen 03 Inicio: search bar and genres. Nearby stores and most searched
-/// books arrive in I2-11 (S04).
+/// Screen 03 Inicio: search bar, recent searches, genres, most searched
+/// books and nearby stores.
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -50,6 +52,14 @@ class HomePage extends StatelessWidget {
           Text('Géneros', style: text.titleMedium),
           const SizedBox(height: AppSpacing.sm),
           GenreChips(onSelected: (g) => _search(context, {'genre': g})),
+          const SizedBox(height: AppSpacing.xl),
+          Text('Más buscados', style: text.titleMedium),
+          const SizedBox(height: AppSpacing.xs),
+          const MostSearchedCarousel(),
+          const SizedBox(height: AppSpacing.xl),
+          Text('Librerías cerca de ti', style: text.titleMedium),
+          const SizedBox(height: AppSpacing.sm),
+          const NearbyStoresSection(),
         ],
       ),
     );

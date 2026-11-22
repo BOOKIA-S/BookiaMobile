@@ -52,6 +52,9 @@ class SearchResultsController extends AsyncNotifier<SearchResults> {
     final result = await ref
         .read(searchRepositoryProvider)
         .search(q: query.q, filters: query.filters, page: page);
+    if (page == 1 && !result.isOffline && ref.mounted) {
+      ref.read(searchHistoryRevisionProvider.notifier).bump();
+    }
     return SearchResults(
       items: [...previous, ...result.items],
       total: result.total,

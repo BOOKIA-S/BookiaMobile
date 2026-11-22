@@ -3,6 +3,7 @@ import 'package:bookia_mobile/core/error/failure.dart';
 import 'package:bookia_mobile/core/network/api_client.dart';
 import 'package:bookia_mobile/features/home/data/repositories/home_repository_impl.dart';
 import 'package:bookia_mobile/features/home/presentation/providers.dart';
+import 'package:bookia_mobile/features/home/presentation/widgets/genre_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -47,7 +48,13 @@ void main() {
     final repo = MockHomeRepository();
     when(repo.getGenres).thenAnswer((_) async => ['Novela', 'Poesía']);
     await pumpHome(tester, repo);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(GenreChips),
+        matching: find.byType(CircularProgressIndicator),
+      ),
+      findsOneWidget,
+    );
     await tester.pumpAndSettle();
     expect(find.widgetWithText(ActionChip, 'Poesía'), findsOneWidget);
   });

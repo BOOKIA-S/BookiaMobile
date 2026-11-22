@@ -31,10 +31,25 @@ final searchHistoryRepositoryProvider = Provider<SearchHistoryRepository>(
   (ref) => ref.watch(_cachedSearchRepositoryProvider),
 );
 
+/// Grows each time a search is saved (Observer, PAT-06), so screen 03,
+/// which stays alive under the bottom bar, refreshes its sections.
+class SearchHistoryRevision extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void bump() => state++;
+}
+
+final searchHistoryRevisionProvider =
+    NotifierProvider<SearchHistoryRevision, int>(SearchHistoryRevision.new);
+
 /// Chips of "Búsquedas recientes" on screen 03.
-final recentSearchesProvider = FutureProvider.autoDispose<List<RecentSearch>>(
-  (ref) => ref.watch(searchHistoryRepositoryProvider).recent(),
-);
+final recentSearchesProvider = FutureProvider.autoDispose<List<RecentSearch>>((
+  ref,
+) {
+  ref.watch(searchHistoryRevisionProvider);
+  return ref.watch(searchHistoryRepositoryProvider).recent();
+});
 
 /// Genres and stores of the filters sheet (screen 05).
 final filterOptionsProvider = FutureProvider.autoDispose<FilterOptions>(
