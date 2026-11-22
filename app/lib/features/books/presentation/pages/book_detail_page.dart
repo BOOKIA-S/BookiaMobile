@@ -5,6 +5,7 @@ import 'package:bookia_mobile/core/session/session_providers.dart';
 import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/features/books/domain/entities/book.dart';
 import 'package:bookia_mobile/features/books/presentation/controllers/book_detail_controller.dart';
+import 'package:bookia_mobile/features/books/presentation/widgets/book_actions.dart';
 import 'package:bookia_mobile/features/books/presentation/widgets/offer_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,32 +21,40 @@ class BookDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = bookDetailProvider(bookId);
+    final detail = ref.watch(provider);
+    final loaded = detail.value;
     return Scaffold(
-      appBar: AppBar(title: const Text('Ficha de libro')),
-      body: ref
-          .watch(provider)
-          .when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      e is Failure ? e.message : 'No pudimos cargar el libro.',
-                      textAlign: TextAlign.center,
-                    ),
-                    TextButton(
-                      onPressed: () => ref.invalidate(provider),
-                      child: const Text('Reintentar'),
-                    ),
-                  ],
+      appBar: AppBar(
+        title: const Text('Ficha de libro'),
+        actions: [
+          if (loaded != null) ...[
+            FavoriteButton(bookId: loaded.id),
+            ShareButton(book: loaded),
+          ],
+        ],
+      ),
+      body: detail.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  e is Failure ? e.message : 'No pudimos cargar el libro.',
+                  textAlign: TextAlign.center,
                 ),
-              ),
+                TextButton(
+                  onPressed: () => ref.invalidate(provider),
+                  child: const Text('Reintentar'),
+                ),
+              ],
             ),
-            data: (book) => _BookDetail(book: book),
           ),
+        ),
+        data: (book) => _BookDetail(book: book),
+      ),
     );
   }
 }
