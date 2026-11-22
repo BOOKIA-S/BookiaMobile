@@ -5,6 +5,7 @@ import 'package:bookia_mobile/features/search/domain/entities/search_filters.dar
 import 'package:bookia_mobile/features/search/presentation/controllers/search_results_controller.dart';
 import 'package:bookia_mobile/features/search/presentation/widgets/book_result_tile.dart';
 import 'package:bookia_mobile/features/search/presentation/widgets/filters_sheet.dart';
+import 'package:bookia_mobile/features/search/presentation/widgets/offline_banner.dart';
 import 'package:bookia_mobile/features/search/presentation/widgets/quick_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -83,11 +84,24 @@ class SearchResultsPage extends ConsumerWidget {
                           final found = r.total == 1
                               ? 'libro encontrado'
                               : 'libros encontrados';
-                          return Text(
+                          final count = Text(
                             r.onlyAvailable
                                 ? '${r.total} $found · solo disponibles'
                                 : '${r.total} $found',
                             style: text.titleSmall,
+                          );
+                          final saved = r.savedAt;
+                          if (saved == null) return count;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              OfflineBanner(
+                                savedAt: saved,
+                                onRetry: () => ref.invalidate(provider),
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              count,
+                            ],
                           );
                         }
                         if (i > r.visible.length) return _footer(ref, r);

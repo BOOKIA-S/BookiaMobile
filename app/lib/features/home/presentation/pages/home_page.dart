@@ -1,6 +1,8 @@
 import 'package:bookia_mobile/app/router.dart';
 import 'package:bookia_mobile/app/theme/app_spacing.dart';
 import 'package:bookia_mobile/features/home/presentation/widgets/genre_chips.dart';
+import 'package:bookia_mobile/features/search/presentation/search_query.dart';
+import 'package:bookia_mobile/features/search/presentation/widgets/recent_searches_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -37,6 +39,12 @@ class HomePage extends StatelessWidget {
             onSubmitted: (q) {
               if (q.trim().isNotEmpty) _search(context, {'q': q.trim()});
             },
+          ),
+          RecentSearchesChips(
+            onSelected: (s) => _search(
+              context,
+              searchQueryParams((q: s.q, filters: s.filters)),
+            ),
           ),
           const SizedBox(height: AppSpacing.xl),
           Text('Géneros', style: text.titleMedium),
