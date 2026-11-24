@@ -105,7 +105,12 @@ class SearchResultsPage extends ConsumerWidget {
                           );
                         }
                         if (i > r.visible.length) return _footer(ref, r);
-                        return BookResultTile(book: r.visible[i - 1]);
+                        final book = r.visible[i - 1];
+                        return BookResultTile(
+                          book: book,
+                          onTap: () =>
+                              context.push<void>(AppRoutes.book(book.id)),
+                        );
                       },
                     ),
                   ),

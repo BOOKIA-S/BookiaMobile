@@ -7,6 +7,7 @@ import 'package:bookia_mobile/features/search/presentation/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../helpers/fakes.dart';
@@ -98,5 +99,35 @@ void main() {
     await tester.tap(find.text('Reintentar'));
     await tester.pumpAndSettle();
     expect(find.text('25 libros encontrados'), findsOneWidget);
+  });
+
+  testWidgets('tapping a row opens the book detail (screen 07)', (
+    tester,
+  ) async {
+    answer(1, () async => BookPage(items: [book(7)], total: 1, page: 1));
+    final router = GoRouter(
+      initialLocation: '/search',
+      routes: [
+        GoRoute(
+          path: '/search',
+          builder: (_, _) => const SearchResultsPage(query: query),
+        ),
+        GoRoute(
+          path: '/books/:id',
+          builder: (_, s) => Text('book ${s.pathParameters['id']}'),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [searchRepositoryProvider.overrideWithValue(repo)],
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Libro 7'));
+    await tester.pumpAndSettle();
+    expect(find.text('book b7'), findsOneWidget);
   });
 }

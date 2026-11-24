@@ -8,37 +8,44 @@ final _mxn = NumberFormat.currency(locale: 'es_MX', symbol: r'$');
 
 /// A result row: title, author, publisher, "desde $X", stores and copies.
 class BookResultTile extends StatelessWidget {
-  const BookResultTile({required this.book, super.key});
+  const BookResultTile({required this.book, this.onTap, super.key});
 
   final BookSummary book;
+
+  /// Opens screen 07 for [book].
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final price = book.minPrice;
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(book.title, style: text.titleMedium),
-            Text('${book.author} · ${book.publisher}', style: text.bodySmall),
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    price == null
-                        ? 'Sin precio'
-                        : 'desde ${_mxn.format(price)}',
-                    style: text.titleSmall,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(book.title, style: text.titleMedium),
+              Text('${book.author} · ${book.publisher}', style: text.bodySmall),
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      price == null
+                          ? 'Sin precio'
+                          : 'desde ${_mxn.format(price)}',
+                      style: text.titleSmall,
+                    ),
                   ),
-                ),
-                AvailabilityBadge(book: book),
-              ],
-            ),
-          ],
+                  AvailabilityBadge(book: book),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
