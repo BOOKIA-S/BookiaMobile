@@ -1,6 +1,8 @@
+import 'package:bookia_mobile/core/notifications/push_message.dart';
+
 /// Facade (PAT-11) over the platform push APIs (Firebase Cloud Messaging):
-/// permission, device token and token refresh. The rest of the app never
-/// imports Firebase.
+/// permission, device token, token refresh and incoming messages. The rest
+/// of the app never imports Firebase.
 abstract interface class PushService {
   /// False when Firebase is not configured on this build (no
   /// `google-services.json` / `GoogleService-Info.plist`): push is off and
@@ -19,4 +21,14 @@ abstract interface class PushService {
 
   /// New tokens issued by FCM while the app runs (Observer, PAT-06).
   Stream<String> get onTokenRefresh;
+
+  /// Messages that arrive while the app is in the foreground. The system
+  /// does not show them, so the app does.
+  Stream<PushMessage> get onMessage;
+
+  /// Notifications tapped while the app was in the background.
+  Stream<PushMessage> get onMessageOpenedApp;
+
+  /// The notification that launched the app from a terminated state, if any.
+  Future<PushMessage?> getInitialMessage();
 }

@@ -1,3 +1,4 @@
+import 'package:bookia_mobile/core/notifications/push_message.dart';
 import 'package:bookia_mobile/core/notifications/push_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -48,4 +49,28 @@ class FirebasePushService implements PushService {
   @override
   // ignore: deprecated_member_use
   Stream<String> get onTokenRefresh => _messaging.onTokenRefresh;
+
+  @override
+  Stream<PushMessage> get onMessage => FirebaseMessaging.onMessage.map(toPush);
+
+  @override
+  Stream<PushMessage> get onMessageOpenedApp =>
+      FirebaseMessaging.onMessageOpenedApp.map(toPush);
+
+  @override
+  Future<PushMessage?> getInitialMessage() async {
+    final message = await _messaging.getInitialMessage();
+    return message == null ? null : toPush(message);
+  }
+
+  /// Adapter: keeps only the text and the string values of `data`.
+  @visibleForTesting
+  static PushMessage toPush(RemoteMessage message) => PushMessage(
+    title: message.notification?.title,
+    body: message.notification?.body,
+    data: {
+      for (final entry in message.data.entries)
+        if (entry.value is String) entry.key: entry.value as String,
+    },
+  );
 }

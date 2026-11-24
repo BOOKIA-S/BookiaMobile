@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bookia_mobile/core/notifications/push_message.dart';
 import 'package:bookia_mobile/core/notifications/push_service.dart';
 
 /// Controllable [PushService] for tests.
@@ -10,6 +11,9 @@ class FakePushService implements PushService {
   String? token;
   int permissionRequests = 0;
   final refreshes = StreamController<String>.broadcast();
+  final messages = StreamController<PushMessage>.broadcast();
+  final opened = StreamController<PushMessage>.broadcast();
+  PushMessage? initial;
 
   @override
   bool get isAvailable => true;
@@ -29,5 +33,18 @@ class FakePushService implements PushService {
   @override
   Stream<String> get onTokenRefresh => refreshes.stream;
 
-  Future<void> close() => refreshes.close();
+  @override
+  Stream<PushMessage> get onMessage => messages.stream;
+
+  @override
+  Stream<PushMessage> get onMessageOpenedApp => opened.stream;
+
+  @override
+  Future<PushMessage?> getInitialMessage() async => initial;
+
+  Future<void> close() async {
+    await refreshes.close();
+    await messages.close();
+    await opened.close();
+  }
 }
