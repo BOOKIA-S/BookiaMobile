@@ -42,9 +42,16 @@ class BookPage {
     required this.items,
     required this.total,
     required this.page,
+    this.savedAt,
   });
 
   final List<BookSummary> items;
   final int total;
   final int page;
+
+  /// When the page comes from the phone because there is no connection
+  /// (I2-10), the moment it was saved. Null for fresh API pages.
+  final DateTime? savedAt;
+
+  bool get isOffline => savedAt != null;
 }

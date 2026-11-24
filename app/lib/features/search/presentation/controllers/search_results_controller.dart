@@ -14,6 +14,7 @@ class SearchResults {
     this.onlyAvailable = false,
     this.strategy = const SortByTitle(),
     this.loadingMore = false,
+    this.savedAt,
   });
 
   /// Every row loaded so far, in API order.
@@ -25,6 +26,9 @@ class SearchResults {
   /// Order chosen in screen 05 or with the quick chips (PAT-09).
   final SortStrategy strategy;
   final bool loadingMore;
+
+  /// Set when the rows come from the phone because there is no connection.
+  final DateTime? savedAt;
 
   bool get hasMore => items.length < total;
 
@@ -48,12 +52,16 @@ class SearchResultsController extends AsyncNotifier<SearchResults> {
     final result = await ref
         .read(searchRepositoryProvider)
         .search(q: query.q, filters: query.filters, page: page);
+    if (page == 1 && !result.isOffline && ref.mounted) {
+      ref.read(searchHistoryRevisionProvider.notifier).bump();
+    }
     return SearchResults(
       items: [...previous, ...result.items],
       total: result.total,
       page: result.page,
       onlyAvailable: query.filters.onlyAvailable,
       strategy: _strategy,
+      savedAt: result.savedAt,
     );
   }
 

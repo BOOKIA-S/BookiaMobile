@@ -1,14 +1,55 @@
 import 'package:bookia_mobile/core/di/providers.dart';
+import 'package:bookia_mobile/features/search/data/datasources/local/search_cache_data_source.dart';
+import 'package:bookia_mobile/features/search/data/repositories/cached_search_repository.dart';
 import 'package:bookia_mobile/features/search/data/repositories/search_repository_impl.dart';
+import 'package:bookia_mobile/features/search/domain/entities/recent_search.dart';
 import 'package:bookia_mobile/features/search/domain/entities/search_filters.dart';
+import 'package:bookia_mobile/features/search/domain/repositories/search_history_repository.dart';
 import 'package:bookia_mobile/features/search/domain/repositories/search_repository.dart';
 import 'package:bookia_mobile/features/search/presentation/search_query.dart';
 import 'package:bookia_mobile/features/stores/presentation/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final searchRepositoryProvider = Provider<SearchRepository>(
-  (ref) => SearchRepositoryImpl(ref.watch(apiClientProvider)),
+/// Where searches are kept offline. main overrides it with the Hive box;
+/// without the override (widget tests) they live only in memory.
+final searchCacheProvider = Provider<SearchCacheDataSource>(
+  (_) => MemorySearchCacheDataSource(),
 );
+
+final _cachedSearchRepositoryProvider = Provider<CachedSearchRepository>(
+  (ref) => CachedSearchRepository(
+    SearchRepositoryImpl(ref.watch(apiClientProvider)),
+    ref.watch(searchCacheProvider),
+  ),
+);
+
+final searchRepositoryProvider = Provider<SearchRepository>(
+  (ref) => ref.watch(_cachedSearchRepositoryProvider),
+);
+
+final searchHistoryRepositoryProvider = Provider<SearchHistoryRepository>(
+  (ref) => ref.watch(_cachedSearchRepositoryProvider),
+);
+
+/// Grows each time a search is saved (Observer, PAT-06), so screen 03,
+/// which stays alive under the bottom bar, refreshes its sections.
+class SearchHistoryRevision extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void bump() => state++;
+}
+
+final searchHistoryRevisionProvider =
+    NotifierProvider<SearchHistoryRevision, int>(SearchHistoryRevision.new);
+
+/// Chips of "Búsquedas recientes" on screen 03.
+final recentSearchesProvider = FutureProvider.autoDispose<List<RecentSearch>>((
+  ref,
+) {
+  ref.watch(searchHistoryRevisionProvider);
+  return ref.watch(searchHistoryRepositoryProvider).recent();
+});
 
 /// Genres and stores of the filters sheet (screen 05).
 final filterOptionsProvider = FutureProvider.autoDispose<FilterOptions>(
