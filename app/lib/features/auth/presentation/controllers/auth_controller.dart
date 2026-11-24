@@ -3,6 +3,7 @@ import 'package:bookia_mobile/core/session/session_providers.dart';
 import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/features/auth/domain/entities/auth_session.dart';
 import 'package:bookia_mobile/features/auth/presentation/providers.dart';
+import 'package:bookia_mobile/features/notifications/presentation/controllers/push_registration_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final authControllerProvider =
@@ -44,6 +45,8 @@ class AuthController extends Notifier<AsyncValue<AuthSession?>> {
   }
 
   Future<void> logout() async {
+    // The device token is removed first, while the API still accepts us.
+    await ref.read(pushRegistrationProvider.notifier).unregister();
     await ref.read(tokenStorageProvider).clearToken();
     ref.read(currentSessionProvider.notifier).set(const GuestSession());
     state = const AsyncData(null);

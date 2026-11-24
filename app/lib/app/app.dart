@@ -2,6 +2,7 @@ import 'package:bookia_mobile/app/router.dart';
 import 'package:bookia_mobile/app/theme/app_theme.dart';
 import 'package:bookia_mobile/core/session/session_providers.dart';
 import 'package:bookia_mobile/core/session/session_status.dart';
+import 'package:bookia_mobile/features/notifications/presentation/controllers/push_registration_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,6 +32,8 @@ class _BookiaAppState extends ConsumerState<BookiaApp> {
     _sessionListener = ref.listenManual(currentSessionProvider, (_, next) {
       _session.value = next;
     });
+    // Screen 13: links the FCM token to the account after each sign-in.
+    ref.read(pushRegistrationProvider);
   }
 
   @override
