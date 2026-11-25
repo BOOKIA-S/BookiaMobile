@@ -92,6 +92,30 @@ void main() {
     expect(find.text('Nombre actualizado.'), findsOneWidget);
   });
 
+  testWidgets('validates empty and oversized names locally', (tester) async {
+    final repository = FakeProfileRepository();
+    await _pump(tester, session: testSession(), repository: repository);
+    await tester.tap(find.text('Editar nombre'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.widgetWithText(TextFormField, 'Nombre'), '   ');
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Escribe tu nombre'), findsOneWidget);
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nombre'),
+      'a' * 81,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('El nombre debe tener 80 caracteres o menos'),
+      findsOneWidget,
+    );
+    expect(repository.updateCalls, 0);
+  });
+
   testWidgets('shows a network error and retries the profile', (tester) async {
     final repository = FakeProfileRepository()
       ..onMe = () => Future.error(const NetworkFailure());

@@ -122,6 +122,30 @@ void main() {
     );
   });
 
+  testWidgets('shows the rate limit in Spanish', (tester) async {
+    final repository = FakeProfileRepository()
+      ..onChangePassword = (_, _) => Future.error(const RateLimitFailure());
+    await _pump(tester, role: 'reader', forced: false, repository: repository);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Contraseña actual'),
+      'secretcurrent1',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Contraseña nueva'),
+      'secretnew123',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Repite la contraseña nueva'),
+      'secretnew123',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Cambiar contraseña'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Demasiados intentos. Espera unos minutos.'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('does not submit twice while the request is pending', (
     tester,
   ) async {

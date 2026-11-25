@@ -69,6 +69,31 @@ void main() {
       expect((user.name, user.role), ('Ana', 'reader'));
     });
 
+    test('keeps the profile fields and the forced-change flag', () async {
+      final api = _MockApiClient();
+      when(() => api.get<Map<String, dynamic>>('/auth/me')).thenAnswer(
+        (_) async => {
+          'user': {
+            '_id': 'u1',
+            'email': 'ana@bookia.mx',
+            'name': 'Ana',
+            'role': 'store_owner',
+            'store_id': 's1',
+            'must_change_password': true,
+            'created_at': '2026-11-09T12:00:00Z',
+          },
+        },
+      );
+      final user = await SessionRepositoryImpl(
+        api,
+        MemoryTokenStore(),
+      ).fetchCurrentUser();
+      expect(user.email, 'ana@bookia.mx');
+      expect(user.storeId, 's1');
+      expect(user.mustChangePassword, isTrue);
+      expect(user.createdAt, DateTime.utc(2026, 11, 9, 12));
+    });
+
     test('knows whether a token is stored and can clear it', () async {
       final tokens = MemoryTokenStore('jwt');
       final repo = SessionRepositoryImpl(_MockApiClient(), tokens);
