@@ -8,10 +8,45 @@ final class GuestSession extends SessionStatus {
   const GuestSession();
 }
 
-/// The stored token is valid; [name] and [role] come from `GET /auth/me`.
+/// The stored token is valid; the fields come from `GET /auth/me`.
+///
+/// [id], [email], [storeId], [mustChangePassword] and [createdAt] are optional
+/// so older call sites that only know the name and role keep working. The
+/// profile screen refreshes them from the API when it opens.
 final class SignedInSession extends SessionStatus {
-  const SignedInSession({required this.name, required this.role});
+  const SignedInSession({
+    this.id = '',
+    this.email = '',
+    required this.name,
+    required this.role,
+    this.storeId,
+    this.mustChangePassword = false,
+    this.createdAt,
+  });
 
+  final String id;
+  final String email;
   final String name;
   final String role;
+  final String? storeId;
+  final bool mustChangePassword;
+  final DateTime? createdAt;
+
+  SignedInSession copyWith({
+    String? id,
+    String? email,
+    String? name,
+    String? role,
+    String? storeId,
+    bool? mustChangePassword,
+    DateTime? createdAt,
+  }) => SignedInSession(
+    id: id ?? this.id,
+    email: email ?? this.email,
+    name: name ?? this.name,
+    role: role ?? this.role,
+    storeId: storeId ?? this.storeId,
+    mustChangePassword: mustChangePassword ?? this.mustChangePassword,
+    createdAt: createdAt ?? this.createdAt,
+  );
 }

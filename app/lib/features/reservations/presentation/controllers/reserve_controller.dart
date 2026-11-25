@@ -1,5 +1,6 @@
 import 'package:bookia_mobile/app/di.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
+import 'package:bookia_mobile/core/reservations/reservations_revision.dart';
 import 'package:bookia_mobile/core/session/session_providers.dart';
 import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/features/reservations/presentation/controllers/reserve_state.dart';
@@ -113,6 +114,7 @@ class ReserveController extends AsyncNotifier<ReserveState> {
         return;
       }
       state = AsyncData(current.transition(ReserveSucceeded(created)));
+      ref.read(reservationsRevisionProvider.notifier).bump();
     } on Failure catch (failure) {
       if (!ref.mounted) return;
       if (!identical(attempt.session, ref.read(currentSessionProvider))) {

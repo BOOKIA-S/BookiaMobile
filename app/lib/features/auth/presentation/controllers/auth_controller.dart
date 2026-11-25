@@ -32,10 +32,19 @@ class AuthController extends Notifier<AsyncValue<AuthSession?>> {
     try {
       final session = await request();
       await ref.read(tokenStorageProvider).saveToken(session.token);
+      final user = session.user;
       ref
           .read(currentSessionProvider.notifier)
           .set(
-            SignedInSession(name: session.user.name, role: session.user.role),
+            SignedInSession(
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              role: user.role,
+              storeId: user.storeId,
+              mustChangePassword: user.mustChangePassword,
+              createdAt: user.createdAt,
+            ),
           );
       state = AsyncData(session);
     } catch (error, stack) {

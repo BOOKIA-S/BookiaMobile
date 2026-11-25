@@ -15,6 +15,8 @@ import 'package:bookia_mobile/features/stores/presentation/providers.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../features/profile/profile_test_helpers.dart';
+
 class MockHomeRepository extends Mock implements HomeRepository {}
 
 class MockSearchRepository extends Mock implements SearchRepository {}
@@ -84,6 +86,7 @@ List<Override> offlineOverrides({
     searchRepositoryProvider.overrideWithValue(search),
     storeRepositoryProvider.overrideWithValue(stores),
     reservationRepositoryProvider.overrideWithValue(reservations),
+    ...profileOverrides(),
     if (location) ...locationOverrides(),
   ];
 }

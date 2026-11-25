@@ -5,6 +5,10 @@ import 'package:bookia_mobile/features/auth/presentation/pages/auth_page.dart';
 import 'package:bookia_mobile/features/books/presentation/pages/book_detail_page.dart';
 import 'package:bookia_mobile/features/home/presentation/pages/home_page.dart';
 import 'package:bookia_mobile/features/onboarding/presentation/pages/location_permission_page.dart';
+import 'package:bookia_mobile/features/profile/presentation/pages/change_password_page.dart';
+import 'package:bookia_mobile/features/profile/presentation/pages/favorites_page.dart';
+import 'package:bookia_mobile/features/profile/presentation/pages/privacy_notice_page.dart';
+import 'package:bookia_mobile/features/profile/presentation/pages/profile_page.dart';
 import 'package:bookia_mobile/features/reservations/domain/entities/reservation.dart';
 import 'package:bookia_mobile/features/reservations/presentation/pages/my_reservations_page.dart';
 import 'package:bookia_mobile/features/reservations/presentation/pages/reservation_ready_page.dart';
@@ -30,6 +34,9 @@ abstract final class AppRoutes {
   static const map = '/map';
   static const reservations = '/reservations';
   static const profile = '/profile';
+  static const profileFavorites = '/profile/favorites';
+  static const profilePassword = '/profile/password';
+  static const profilePrivacy = '/profile/privacy';
   static const auth = '/auth';
   static const staff = '/staff';
   static const stores = '/stores';
@@ -67,7 +74,9 @@ abstract final class AppRoutes {
       next != null && _isContinuation(next) ? next : profile;
 
   static bool _isContinuation(String next) =>
-      (next.startsWith('/reserve/') || next.startsWith('/reservation/')) &&
+      (next.startsWith('/reserve/') ||
+          next.startsWith('/reservation/') ||
+          next.startsWith('/profile/')) &&
       !next.contains('://');
 
   /// Accounts that may open screen 16.
@@ -75,7 +84,9 @@ abstract final class AppRoutes {
       role == 'store_owner' || role == 'admin';
 
   static bool _needsReader(String path) =>
-      path.startsWith('/reserve/') || path.startsWith('/reservation/');
+      path.startsWith('/reserve/') ||
+      path.startsWith('/reservation/') ||
+      path.startsWith('/profile/');
 }
 
 StatefulShellBranch _tab(
@@ -86,11 +97,7 @@ StatefulShellBranch _tab(
   routes: [
     GoRoute(
       path: path,
-      builder: (_, state) =>
-          page?.call(state) ??
-          (path == AppRoutes.profile
-              ? const AuthEntryPage()
-              : PlaceholderPage(title: title)),
+      builder: (_, state) => page?.call(state) ?? PlaceholderPage(title: title),
     ),
   ],
 );
@@ -136,6 +143,18 @@ GoRouter createRouter({
     GoRoute(path: AppRoutes.stores, builder: (_, _) => const StoresListPage()),
     GoRoute(path: AppRoutes.scan, builder: (_, _) => const ScannerPage()),
     GoRoute(
+      path: AppRoutes.profileFavorites,
+      builder: (_, _) => const FavoritesPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.profilePassword,
+      builder: (_, _) => const ChangePasswordPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.profilePrivacy,
+      builder: (_, _) => const PrivacyNoticePage(),
+    ),
+    GoRoute(
       path: AppRoutes.storeDetail,
       builder: (_, state) => StoreDetailPage(
         key: ValueKey(state.pathParameters['id']),
@@ -153,7 +172,7 @@ GoRouter createRouter({
           'Mis reservas',
           (_) => const MyReservationsPage(),
         ),
-        _tab(AppRoutes.profile, 'Perfil'),
+        _tab(AppRoutes.profile, 'Perfil', (_) => const ProfilePage()),
       ],
     ),
     GoRoute(

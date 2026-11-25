@@ -1,3 +1,5 @@
+import 'package:bookia_mobile/core/favorites/favorites_repository.dart';
+import 'package:bookia_mobile/core/favorites/favorites_repository_impl.dart';
 import 'package:bookia_mobile/core/network/api_client.dart';
 import 'package:bookia_mobile/core/network/interceptors/auth_interceptor.dart';
 import 'package:bookia_mobile/core/session/session_providers.dart';
@@ -25,6 +27,12 @@ final authInterceptorProvider = Provider<AuthInterceptor>(
 );
 
 final dioProvider = Provider<Dio>((_) => Dio());
+
+/// Favorites are shared by the book detail (screen 07) and the profile
+/// (screen 15), so the contract lives in core (ARQ-04).
+final favoritesRepositoryProvider = Provider<FavoritesRepository>(
+  (ref) => FavoritesRepositoryImpl(ref.watch(apiClientProvider)),
+);
 
 /// Singleton (PAT-04): one ApiClient (one Dio) for the whole app.
 /// Non auto-dispose providers stay alive for the app's lifetime.

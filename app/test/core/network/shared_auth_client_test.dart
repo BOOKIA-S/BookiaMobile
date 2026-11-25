@@ -211,9 +211,17 @@ void main() {
     );
     await tester.tap(find.text('Perfil'));
     await tester.pumpAndSettle();
-    expect(find.text('Sesión iniciada: Ana'), findsOneWidget);
+    expect(find.text('Editar nombre'), findsOneWidget);
+    expect(find.text('Ana'), findsWidgets);
 
+    await tester.scrollUntilVisible(
+      find.text('Cerrar sesión'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.text('Cerrar sesión'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Cerrar sesión'));
     await tester.pumpAndSettle();
     expect(container.read(currentSessionProvider), isA<GuestSession>());
     expect(await container.read(tokenStorageProvider).readToken(), isNull);
