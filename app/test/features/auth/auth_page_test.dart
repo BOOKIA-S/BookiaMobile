@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../profile/profile_test_helpers.dart';
 import 'auth_test_helpers.dart';
 
 void main() {
@@ -22,12 +23,20 @@ void main() {
     addTearDown(router.dispose);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [authRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repository),
+          ...profileOverrides(),
+        ],
         child: MaterialApp.router(routerConfig: router),
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('Buscar no requiere cuenta.'), findsOneWidget);
+    expect(
+      find.textContaining('Inicia sesión para ver tu perfil'),
+      findsOneWidget,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Iniciar sesión'));
+    await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Iniciar sesión'));
     await tester.pumpAndSettle();
     expect(find.text('Escribe un correo válido'), findsOneWidget);
@@ -47,10 +56,22 @@ void main() {
     await tester.pumpAndSettle();
     expect(repository.action, 'login');
     expect(repository.staff, isTrue);
-    expect(find.text('Sesión iniciada: Ana'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Perfil'), findsOneWidget);
+    expect(find.text('Editar nombre'), findsOneWidget);
+    expect(find.text('Ana'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Cerrar sesión'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.text('Cerrar sesión'));
     await tester.pumpAndSettle();
-    expect(find.text('Iniciar sesión'), findsWidgets);
+    await tester.tap(find.widgetWithText(FilledButton, 'Cerrar sesión'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('Inicia sesión para ver tu perfil'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('register requires name and a password of 8 to 200 characters', (
@@ -62,7 +83,10 @@ void main() {
     addTearDown(router.dispose);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [authRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repository),
+          ...profileOverrides(),
+        ],
         child: MaterialApp.router(routerConfig: router),
       ),
     );
@@ -103,7 +127,10 @@ void main() {
     addTearDown(router.dispose);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [authRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repository),
+          ...profileOverrides(),
+        ],
         child: MaterialApp.router(routerConfig: router),
       ),
     );
@@ -119,7 +146,8 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Iniciar sesión'));
     await tester.pumpAndSettle();
     expect(repository.calls, 1);
-    expect(find.text('Sesión iniciada: Ana'), findsOneWidget);
+    expect(find.text('Editar nombre'), findsOneWidget);
+    expect(find.text('Ana'), findsOneWidget);
   });
 
   testWidgets(
@@ -132,7 +160,10 @@ void main() {
       addTearDown(router.dispose);
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [authRepositoryProvider.overrideWithValue(repository)],
+          overrides: [
+            authRepositoryProvider.overrideWithValue(repository),
+            ...profileOverrides(),
+          ],
           child: MaterialApp.router(routerConfig: router),
         ),
       );
@@ -163,7 +194,8 @@ void main() {
       repository.next = null;
       await tester.tap(find.widgetWithText(FilledButton, 'Iniciar sesión'));
       await tester.pumpAndSettle();
-      expect(find.text('Sesión iniciada: Ana'), findsOneWidget);
+      expect(find.text('Editar nombre'), findsOneWidget);
+      expect(find.text('Ana'), findsOneWidget);
     },
   );
 }

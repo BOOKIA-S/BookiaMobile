@@ -1,6 +1,8 @@
 import 'package:bookia_mobile/app/app.dart';
 import 'package:bookia_mobile/core/notifications/firebase_push_service.dart';
 import 'package:bookia_mobile/core/notifications/push_providers.dart';
+import 'package:bookia_mobile/core/preferences/preferences_providers.dart';
+import 'package:bookia_mobile/core/preferences/preferences_store.dart';
 import 'package:bookia_mobile/features/search/data/datasources/local/search_cache_data_source.dart';
 import 'package:bookia_mobile/features/search/presentation/providers.dart';
 import 'package:flutter/material.dart';
@@ -14,11 +16,19 @@ Future<void> main() async {
   final searchCache = await HiveSearchCacheDataSource.open();
   // Screen 13: without the Firebase config files push stays off (COD-06).
   final push = await FirebasePushService.initialize();
+  // Preferences are non-sensitive; if Hive fails, use memory for this run.
+  PreferencesStore preferences = MemoryPreferencesStore();
+  try {
+    preferences = await HivePreferencesStore.open();
+  } on Object catch (error) {
+    debugPrint('Preferences store unavailable: $error');
+  }
   runApp(
     ProviderScope(
       overrides: [
         searchCacheProvider.overrideWithValue(searchCache),
         if (push != null) pushServiceProvider.overrideWithValue(push),
+        preferencesStoreProvider.overrideWithValue(preferences),
       ],
       child: const BookiaApp(),
     ),

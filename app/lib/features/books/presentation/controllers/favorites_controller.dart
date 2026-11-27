@@ -1,3 +1,4 @@
+import 'package:bookia_mobile/core/favorites/favorites_revision.dart';
 import 'package:bookia_mobile/core/session/session_providers.dart';
 import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/features/books/presentation/providers.dart';
@@ -25,7 +26,10 @@ class FavoritesController extends AsyncNotifier<Set<String>> {
     final repo = ref.read(favoritesRepositoryProvider);
     try {
       final after = saving ? await repo.add(bookId) : await repo.remove(bookId);
-      if (ref.mounted) state = AsyncData(after);
+      if (ref.mounted) {
+        state = AsyncData(after);
+        ref.read(favoritesRevisionProvider.notifier).bump();
+      }
       return after.contains(bookId);
     } on Object {
       if (ref.mounted) state = AsyncData(before);

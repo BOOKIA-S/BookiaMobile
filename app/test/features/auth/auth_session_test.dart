@@ -14,6 +14,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/fakes.dart';
+import '../profile/profile_test_helpers.dart';
 import 'auth_test_helpers.dart';
 
 void main() {
@@ -85,7 +86,10 @@ void main() {
     addTearDown(router.dispose);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [authRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repository),
+          ...profileOverrides(),
+        ],
         child: MaterialApp.router(routerConfig: router),
       ),
     );
@@ -104,7 +108,8 @@ void main() {
     expect(repository.calls, 1);
     pending.complete(FakeAuthRepository.session);
     await tester.pumpAndSettle();
-    expect(find.text('Sesión iniciada: Ana'), findsOneWidget);
+    expect(find.text('Editar nombre'), findsOneWidget);
+    expect(find.text('Ana'), findsWidgets);
   });
 
   testWidgets(
@@ -130,11 +135,11 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Sesión iniciada: Ana'), findsOneWidget);
+      expect(find.text('Editar nombre'), findsOneWidget);
       repository.next = Future<AuthSession>.error(const UnauthorizedFailure());
       await controller.login('other@b.mx', 'wrong-password');
       await tester.pumpAndSettle();
-      expect(find.text('Sesión iniciada: Ana'), findsOneWidget);
+      expect(find.text('Editar nombre'), findsOneWidget);
       expect(await container.read(tokenStorageProvider).readToken(), 'secret');
       expect(container.read(currentSessionProvider), isA<SignedInSession>());
     },

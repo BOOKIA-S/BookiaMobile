@@ -1,0 +1,65 @@
+name: dora
+
+# DORA metrics (docs/CONSTITUTION.md §8 and §9.1, OBJ-09). Every Friday after
+# the weekly release, and on demand, runs scripts/dora.sh with the GitHub API
+# and proposes the updated docs/DORA.md in a PR to develop (develop only
+# accepts PRs). The numbers are also shown in the run summary.
+#
+# Needs "Allow GitHub Actions to create and approve pull requests" in
+# Settings > Actions > General. PRs opened with GITHUB_TOKEN do not start other
+# workflows, so to run the required checks close and reopen the PR before
+# merging it.
+
+on:
+  schedule:
+    - cron: "0 3 * * 6" # Friday 21:00 in Puebla (UTC-6)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dora
+  cancel-in-progress: false
+
+jobs:
+  dora:
+    name: dora
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: develop
+          fetch-depth: 0
+
+      - name: Fetch main and release tags
+        run: git fetch --tags origin main
+
+      - name: Compute DORA metrics
+        run: bash scripts/dora.sh --repo "$GITHUB_REPOSITORY"
+
+      - name: Show the report in the run summary
+        run: cat docs/DORA.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Propose docs/DORA.md in a PR to develop
+        run: |
+          branch="docs/dora-$(date -u +%Y-%m-%d)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add docs/DORA.md
+          if git diff --cached --quiet; then
+            echo "docs/DORA.md has no changes." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git commit -m "docs(dora): update DORA metrics"
+          git push --force-with-lease origin "$branch"
+          if [ -z "$(gh pr list --head "$branch" --state open --json number --jq '.[].number')" ]; then
+            gh pr create --base develop --head "$branch" \
+              --title "docs(dora): update DORA metrics" \
+              --body "Actualización automática de \`docs/DORA.md\` (workflow \`dora\`, ejecución ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
+          fi

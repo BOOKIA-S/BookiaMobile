@@ -1,11 +1,11 @@
 import 'package:bookia_mobile/core/error/failure.dart';
+import 'package:bookia_mobile/core/favorites/favorites_repository.dart';
+import 'package:bookia_mobile/core/favorites/favorites_repository_impl.dart';
 import 'package:bookia_mobile/core/session/session_providers.dart';
 import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/core/utils/external_launcher.dart';
-import 'package:bookia_mobile/features/books/data/repositories/favorites_repository_impl.dart';
 import 'package:bookia_mobile/features/books/domain/entities/book.dart';
 import 'package:bookia_mobile/features/books/domain/repositories/book_repository.dart';
-import 'package:bookia_mobile/features/books/domain/repositories/favorites_repository.dart';
 import 'package:bookia_mobile/features/books/presentation/controllers/favorites_controller.dart';
 import 'package:bookia_mobile/features/books/presentation/pages/book_detail_page.dart';
 import 'package:bookia_mobile/features/books/presentation/providers.dart';

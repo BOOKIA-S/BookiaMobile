@@ -16,8 +16,10 @@ enum LocationAccess {
 }
 
 /// Facade (PAT-11) over the platform location APIs: permission, position
-/// and distance. The position is only used on the phone to sort stores by
-/// distance and draw routes; it is never sent or stored by BOOKIA (SEG-04).
+/// and distance. The position is used on the phone to sort stores by distance
+/// and draw routes. The current `/stores/near` query also sends coordinates
+/// to the API for the distance calculation; SEG-04 must be reconciled with
+/// that behaviour (see docs/QUALITY.md and the privacy notice).
 abstract interface class LocationService {
   /// Current permission, without showing any dialog.
   Future<LocationAccess> checkAccess();

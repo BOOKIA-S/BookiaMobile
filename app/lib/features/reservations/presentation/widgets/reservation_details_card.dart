@@ -9,6 +9,7 @@ class ReservationDetailsCard extends StatelessWidget {
   const ReservationDetailsCard({
     required this.reservation,
     required this.onDirections,
+    this.onReminder,
     super.key,
   });
 
@@ -16,6 +17,10 @@ class ReservationDetailsCard extends StatelessWidget {
 
   /// Null when the store has no address, so the action is not offered.
   final VoidCallback? onDirections;
+
+  /// Null when the reservation is no longer active; the page explains when
+  /// there is not enough time left to build a valid event.
+  final VoidCallback? onReminder;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +64,14 @@ class ReservationDetailsCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Text('Vence el ${formatDateTime(reservation.expiresAt)}.'),
             const SizedBox(height: AppSpacing.md),
+            if (onReminder != null) ...[
+              OutlinedButton.icon(
+                onPressed: onReminder,
+                icon: const Icon(Icons.event_available_outlined),
+                label: const Text('Agregar recordatorio'),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+            ],
             if (onDirections != null)
               OutlinedButton.icon(
                 onPressed: onDirections,
