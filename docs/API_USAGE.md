@@ -110,6 +110,8 @@ Sesión en la app (API-01): `login` y `register` se mandan con `client: "mobile"
 | `POST /devices` `{ token, platform }` | 13 | `{ device }`. Upsert por `token`; `platform` es `android` o `ios`. 400 si el token falta o pasa de 4096 caracteres |
 | `DELETE /devices/:token` | 13, 15 | 204 siempre. El token va codificado en la URL (trae `:`). Se llama antes de borrar el token de sesión |
 
+Cada aviso puede traer en `data` el enlace que abre la app: `reservation_id` (pantalla 11), `book_id` (pantalla 07, "¡Ya llegó!") o `type: "reservation"` sin id (pantalla 12). Solo se aceptan ids de Mongo de 24 caracteres hexadecimales.
+
 Para activar el push en un teléfono hacen falta los archivos de Firebase, que **no** van en Git (COD-06): `app/android/app/google-services.json` y `app/ios/Runner/GoogleService-Info.plist`. Sin ellos la app compila y funciona igual, solo sin notificaciones.
 
 ### Lector (`reader`)

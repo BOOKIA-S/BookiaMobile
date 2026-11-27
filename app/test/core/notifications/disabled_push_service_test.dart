@@ -15,5 +15,8 @@ void main() {
     expect(await push.requestPermission(), isFalse);
     expect(await push.getToken(), isNull);
     expect(await push.onTokenRefresh.isEmpty, isTrue);
+    expect(await push.onMessage.isEmpty, isTrue);
+    expect(await push.onMessageOpenedApp.isEmpty, isTrue);
+    expect(await push.getInitialMessage(), isNull);
   });
 }

@@ -1,3 +1,4 @@
+import 'package:bookia_mobile/core/notifications/push_message.dart';
 import 'package:bookia_mobile/core/notifications/push_service.dart';
 
 /// Push turned off: Firebase is not configured on this build, or the app runs
@@ -19,4 +20,13 @@ class DisabledPushService implements PushService {
 
   @override
   Stream<String> get onTokenRefresh => const Stream.empty();
+
+  @override
+  Stream<PushMessage> get onMessage => const Stream.empty();
+
+  @override
+  Stream<PushMessage> get onMessageOpenedApp => const Stream.empty();
+
+  @override
+  Future<PushMessage?> getInitialMessage() async => null;
 }
