@@ -1,5 +1,10 @@
+import 'package:bookia_mobile/core/favorites/favorite_book.dart';
+
 /// Repository (PAT-01) of the reader's favorite books. Throws a Failure.
 abstract interface class FavoritesRepository {
+  /// `GET /favorites`: the saved books, most recently saved first.
+  Future<List<FavoriteBook>> list();
+
   /// `GET /favorites`: ids of the saved books.
   Future<Set<String>> ids();
 

@@ -1,3 +1,4 @@
+import 'package:bookia_mobile/core/reservations/reservations_revision.dart';
 import 'package:bookia_mobile/features/reservations/domain/entities/reservation.dart';
 import 'package:bookia_mobile/features/reservations/presentation/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,7 @@ class MyReservationsController extends AsyncNotifier<List<Reservation>> {
   Future<void> cancel(String id) async {
     await ref.read(reservationRepositoryProvider).cancel(id);
     if (!ref.mounted) return;
+    ref.read(reservationsRevisionProvider.notifier).bump();
     ref.invalidateSelf();
     await future;
   }

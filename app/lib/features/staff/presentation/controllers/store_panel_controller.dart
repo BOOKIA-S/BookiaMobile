@@ -26,4 +26,7 @@ class StorePanelController extends AsyncNotifier<StorePanel> {
 final storePanelProvider =
     AsyncNotifierProvider.autoDispose<StorePanelController, StorePanel>(
       StorePanelController.new,
+      // A pending password change is not a transient error: retrying would
+      // loop forever instead of showing the profile link.
+      retry: (_, _) => null,
     );

@@ -21,7 +21,15 @@ class SessionRepositoryImpl implements SessionRepository {
   Future<SignedInSession> fetchCurrentUser() async {
     final json = await _api.get<Map<String, dynamic>>('/auth/me');
     final me = MeDto.fromJson(json);
-    return SignedInSession(name: me.name, role: me.role);
+    return SignedInSession(
+      id: me.id,
+      email: me.email,
+      name: me.name,
+      role: me.role,
+      storeId: me.storeId,
+      mustChangePassword: me.mustChangePassword,
+      createdAt: me.createdAt,
+    );
   }
 
   @override

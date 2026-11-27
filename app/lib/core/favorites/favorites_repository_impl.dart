@@ -1,5 +1,6 @@
+import 'package:bookia_mobile/core/favorites/favorite_book.dart';
+import 'package:bookia_mobile/core/favorites/favorites_repository.dart';
 import 'package:bookia_mobile/core/network/api_client.dart';
-import 'package:bookia_mobile/features/books/domain/repositories/favorites_repository.dart';
 
 class FavoritesRepositoryImpl implements FavoritesRepository {
   const FavoritesRepositoryImpl(this._api);
@@ -7,13 +8,24 @@ class FavoritesRepositoryImpl implements FavoritesRepository {
   final ApiClient _api;
 
   @override
-  Future<Set<String>> ids() async {
+  Future<List<FavoriteBook>> list() async {
     final json = await _api.get<Map<String, dynamic>>('/favorites');
-    return {
+    return [
       for (final item in json['items'] as List? ?? const [])
-        if (item case {'_id': final String id}) id,
-    };
+        if (item case {'_id': final String id})
+          FavoriteBook(
+            id: id,
+            title: item['title'] as String? ?? '',
+            author: item['author'] as String? ?? '',
+            genre: item['genre'] as String?,
+            publisher: item['publisher'] as String?,
+          ),
+    ];
   }
+
+  @override
+  Future<Set<String>> ids() async =>
+      (await list()).map((book) => book.id).toSet();
 
   @override
   Future<Set<String>> add(String bookId) async =>

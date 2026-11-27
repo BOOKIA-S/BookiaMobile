@@ -1,8 +1,6 @@
 import 'package:bookia_mobile/app/router.dart';
 import 'package:bookia_mobile/app/theme/app_spacing.dart';
 import 'package:bookia_mobile/core/error/failure.dart';
-import 'package:bookia_mobile/core/session/session_providers.dart';
-import 'package:bookia_mobile/core/session/session_status.dart';
 import 'package:bookia_mobile/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,33 +11,6 @@ class AuthPage extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<AuthPage> createState() => _AuthPageState();
-}
-
-/// Profile tab entry until the S04 profile screen is available.
-class AuthEntryPage extends ConsumerWidget {
-  const AuthEntryPage({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final session = ref.watch(currentSessionProvider);
-    if (session is! SignedInSession) return const AuthPage();
-    return Scaffold(
-      appBar: AppBar(title: const Text('Cuenta')),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Sesión iniciada: ${session.name}'),
-            TextButton(
-              onPressed: () =>
-                  ref.read(authControllerProvider.notifier).logout(),
-              child: const Text('Cerrar sesión'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _AuthPageState extends ConsumerState<AuthPage> {

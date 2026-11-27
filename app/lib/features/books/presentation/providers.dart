@@ -1,10 +1,11 @@
 import 'package:bookia_mobile/core/di/providers.dart';
 import 'package:bookia_mobile/features/books/data/repositories/book_repository_impl.dart';
-import 'package:bookia_mobile/features/books/data/repositories/favorites_repository_impl.dart';
 import 'package:bookia_mobile/features/books/domain/repositories/book_repository.dart';
-import 'package:bookia_mobile/features/books/domain/repositories/favorites_repository.dart';
 import 'package:bookia_mobile/features/books/domain/usecases/find_book_by_isbn.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+export 'package:bookia_mobile/core/di/providers.dart'
+    show favoritesRepositoryProvider;
 
 /// Provider/DI (PAT-03): screens depend on the interface, not on data/.
 final bookRepositoryProvider = Provider<BookRepository>(
@@ -14,9 +15,4 @@ final bookRepositoryProvider = Provider<BookRepository>(
 /// Used by the ISBN scanner (screen 06, S03).
 final findBookByIsbnProvider = Provider<FindBookByIsbn>(
   (ref) => FindBookByIsbn(ref.watch(bookRepositoryProvider)),
-);
-
-/// Favorites of the signed-in reader (screen 07, S04).
-final favoritesRepositoryProvider = Provider<FavoritesRepository>(
-  (ref) => FavoritesRepositoryImpl(ref.watch(apiClientProvider)),
 );
