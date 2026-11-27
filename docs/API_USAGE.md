@@ -103,6 +103,17 @@ Sesión en la app (API-01): `login` y `register` se mandan con `client: "mobile"
 
 `user` = `{ _id, email, name, role, store_id, must_change_password, created_at }`.
 
+### Notificaciones push (cualquier rol con sesión, API-04)
+
+| Método y ruta | Pantallas | Nota |
+| --- | --- | --- |
+| `POST /devices` `{ token, platform }` | 13 | `{ device }`. Upsert por `token`; `platform` es `android` o `ios`. 400 si el token falta o pasa de 4096 caracteres |
+| `DELETE /devices/:token` | 13, 15 | 204 siempre. El token va codificado en la URL (trae `:`). Se llama antes de borrar el token de sesión |
+
+Cada aviso puede traer en `data` el enlace que abre la app: `reservation_id` (pantalla 11), `book_id` (pantalla 07, "¡Ya llegó!") o `type: "reservation"` sin id (pantalla 12). Solo se aceptan ids de Mongo de 24 caracteres hexadecimales.
+
+Para activar el push en un teléfono hacen falta los archivos de Firebase, que **no** van en Git (COD-06): `app/android/app/google-services.json` y `app/ios/Runner/GoogleService-Info.plist`. Sin ellos la app compila y funciona igual, solo sin notificaciones.
+
 ### Lector (`reader`)
 
 | Método y ruta | Pantallas | Nota |
@@ -150,11 +161,10 @@ Sesión en la app (API-01): `login` y `register` se mandan con `client: "mobile"
 
 ## 7. Ajustes pendientes en la API (los hace Jaime)
 
-API-01 (Bearer), API-02 (`/stores/near`) y API-03 (`?isbn=`) ya están en la API y se describen en las secciones 2 y 4. Faltan estos; hasta que existan, usa la alternativa:
+API-01 (Bearer), API-02 (`/stores/near`), API-03 (`?isbn=`) y API-04 (`/devices`) ya están en la API y se describen en las secciones 2 y 4. Falta este; hasta que exista, usa la alternativa:
 
 | ID | Cambio | Para el | Alternativa mientras tanto |
 | --- | --- | --- | --- |
-| API-04 | `POST /devices` (token FCM) | 16 nov | Notificaciones locales |
 | API-05 | `POST/DELETE /alerts` ("Avisarme") | 23 nov | Se omite "Avisarme" |
 
 Cuando Jaime publique cada cambio, este documento se actualiza con su ruta y respuesta exactas.

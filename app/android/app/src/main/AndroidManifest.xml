@@ -3,6 +3,8 @@
     <!-- Screen 02: location only to sort stores by distance (SEG-04) -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <!-- Screen 13: push notifications (Android 13+ asks the user) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="bookia_mobile"
         android:name="${applicationName}"

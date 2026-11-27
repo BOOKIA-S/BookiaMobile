@@ -6,6 +6,12 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Screen 13: android/app/google-services.json comes from the Firebase console
+// and is not in Git (COD-06). Without it push stays off and the app builds.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 // Screen 08: Google Maps key from android/local.properties (MAPS_API_KEY),
 // which is not in Git. Without it the map stays grey; nothing else breaks.
 val mapsApiKey: String =

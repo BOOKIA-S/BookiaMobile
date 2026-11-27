@@ -12,6 +12,8 @@ environment:
 # Only packages approved in docs/CONSTITUTION.md 2.2. Anything else needs an ADR.
 dependencies:
   dio: ^5.11.1
+  firebase_core: ^5.2.0
+  firebase_messaging: ^17.1.0
   flutter:
     sdk: flutter
   flutter_riverpod: ^3.5.0

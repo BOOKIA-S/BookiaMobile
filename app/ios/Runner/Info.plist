@@ -6,6 +6,10 @@
 	<string>BOOKIA usa la cámara solo para leer el código de barras (ISBN) de la contraportada de un libro.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>BOOKIA usa tu ubicación solo para ordenar las librerías por distancia y trazar la ruta. Nunca la guardamos.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
