@@ -3,7 +3,7 @@
 > Archivo generado por `scripts/dora.sh` (workflow `dora.yml`). No se edita a mano.
 
 - **Repositorio:** `BOOKIA-S/BookiaMobile`
-- **Generado:** 2026-11-24 21:00:47 UTC
+- **Generado:** 2026-11-28 10:59:05 UTC
 - **Despliegue (S-3):** GitHub Release publicado desde `main` con su APK e imágenes.
 - **Semanas transcurridas:** 4 (S01, S02, S03, S04)
 
@@ -22,10 +22,10 @@ Sin releases, incidentes o PRs liberados la métrica queda **no calculable**, no
 
 | Semana | Fechas | Releases | PRs fusionados en `develop` |
 | --- | --- | --- | --- |
-| S01 | 11-02 a 11-08 | 0 | 12 |
+| S01 | 11-02 a 11-08 | 0 | 13 |
 | S02 | 11-09 a 11-15 | 1 | 14 |
-| S03 | 11-16 a 11-22 | 0 | 11 |
-| S04 | 11-23 a 11-29 | 0 | 2 |
+| S03 | 11-16 a 11-22 | 0 | 13 |
+| S04 | 11-23 a 11-29 | 0 | 10 |
 
 ## Releases
 
@@ -35,5 +35,5 @@ Sin releases, incidentes o PRs liberados la métrica queda **no calculable**, no
 
 ## Pendiente de liberar
 
-14 PRs fusionados en `develop` todavía no están en ningún release.
+25 PRs fusionados en `develop` todavía no están en ningún release.
 
